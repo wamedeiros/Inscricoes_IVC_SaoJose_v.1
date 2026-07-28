@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   BookOpen,
@@ -26,14 +26,23 @@ import {
   Legend
 } from 'recharts';
 import { Inscrito, Turma, Comunidade, MODALIDADE_NAMES, ModalidadeCatequese } from '../types';
-import { getInscritos, getTurmas, getComunidades } from '../services/storage';
+import { getInscritos, getTurmas, getComunidades, subscribeStorage } from '../services/storage';
 
 const COLORS = ['#8C7851', '#C4A976', '#5D574F', '#2D2A26', '#A69F95', '#D2C7B5'];
 
 export const AdminDashboard: React.FC = () => {
-  const inscritos = getInscritos();
-  const turmas = getTurmas();
-  const comunidades = getComunidades();
+  const [inscritos, setInscritos] = useState<Inscrito[]>(() => getInscritos());
+  const [turmas, setTurmas] = useState<Turma[]>(() => getTurmas());
+  const [comunidades, setComunidades] = useState<Comunidade[]>(() => getComunidades());
+
+  useEffect(() => {
+    const unsub = subscribeStorage(() => {
+      setInscritos(getInscritos());
+      setTurmas(getTurmas());
+      setComunidades(getComunidades());
+    });
+    return () => unsub();
+  }, []);
 
   // KPIs
   const totalInscritos = inscritos.length;

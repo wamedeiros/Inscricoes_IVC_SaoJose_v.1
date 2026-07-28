@@ -17,7 +17,7 @@ import {
   UserPlus,
   CheckCircle2
 } from 'lucide-react';
-import { Turma, Catequista, MODALIDADE_NAMES } from '../types';
+import { Turma, Catequista, Inscrito, MODALIDADE_NAMES } from '../types';
 import {
   getTurmas,
   getCatequistas,
@@ -25,7 +25,8 @@ import {
   saveTurma,
   deleteTurma,
   saveCatequista,
-  deleteCatequista
+  deleteCatequista,
+  subscribeStorage
 } from '../services/storage';
 import { gerarListaPresencaPDF } from '../services/pdfGenerator';
 import { exportarTurmasExcel } from '../services/excelGenerator';
@@ -34,8 +35,17 @@ import { ConfirmModal } from './ConfirmModal';
 export const TurmasManager: React.FC = () => {
   const [turmas, setTurmas] = useState<Turma[]>(() => getTurmas());
   const [catequistas, setCatequistas] = useState<Catequista[]>(() => getCatequistas());
+  const [inscritos, setInscritos] = useState<Inscrito[]>(() => getInscritos());
   const [catequistaExcluirId, setCatequistaExcluirId] = useState<string | null>(null);
-  const inscritos = getInscritos();
+
+  React.useEffect(() => {
+    const unsub = subscribeStorage(() => {
+      setTurmas(getTurmas());
+      setCatequistas(getCatequistas());
+      setInscritos(getInscritos());
+    });
+    return () => unsub();
+  }, []);
 
   // Catequistas organizados estritamente em ordem alfabética
   const catequistasOrdenados = [...catequistas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));

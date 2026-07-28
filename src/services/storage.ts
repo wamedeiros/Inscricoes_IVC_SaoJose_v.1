@@ -372,7 +372,7 @@ const SEED_INSCRITOS: Inscrito[] = [
     necessidadeEspecial: false,
     dataInscricao: '2028-01-18',
     horaInscricao: '14:20:00',
-    status: 'Aprovada',
+    status: 'Matriculada',
     paroquiaId: 'par-01',
     comunidadeId: 'com-01',
     turmaId: 'tur-02',
@@ -611,7 +611,7 @@ export function getTurmas(paroquiaId?: string): Turma[] {
 
   // Recalcular ocupação real baseada estritamente nos inscritos alocados
   const turmasAtualizadas = turmas.map(t => {
-    const ocupacaoReal = inscritos.filter(i => i.turmaId === t.id && i.status !== 'Cancelada').length;
+    const ocupacaoReal = inscritos.filter(i => i.turmaId === t.id).length;
     const listaEspera = Math.max(0, ocupacaoReal - (t.vagasMaximas || 20));
     return {
       ...t,
@@ -648,7 +648,7 @@ export function deleteTurma(turmaId: string): void {
   list.forEach(i => {
     if (i.turmaId === turmaId) {
       delete i.turmaId;
-      i.status = 'Aprovada';
+      i.status = 'Matriculada';
       modificado = true;
     }
   });
@@ -1043,7 +1043,7 @@ export function recalcularVagasTurma(turmaId: string): void {
   const turmas = getTurmas();
   const idx = turmas.findIndex(t => t.id === turmaId);
   if (idx >= 0) {
-    const inscritos = getInscritos().filter(i => i.turmaId === turmaId && i.status !== 'Cancelada');
+    const inscritos = getInscritos().filter(i => i.turmaId === turmaId);
     const turma = turmas[idx];
     turma.vagasOcupadas = inscritos.length;
     

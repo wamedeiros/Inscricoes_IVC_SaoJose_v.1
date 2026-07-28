@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -33,7 +33,8 @@ import {
   getComunidades,
   salvarInscrito,
   excluirInscritoLógico,
-  excluirInscritoDefinitivo
+  excluirInscritoDefinitivo,
+  subscribeStorage
 } from '../services/storage';
 import { formatarDataBR, formatarTelefone, formatarCPF } from '../services/config';
 import { gerarComprovanteInscricaoPDF } from '../services/pdfGenerator';
@@ -66,6 +67,14 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
 
+  // Inscrever-se para atualizações reativas no storage
+  useEffect(() => {
+    const unsub = subscribeStorage(() => {
+      setInscritos(getInscritos());
+    });
+    return () => unsub();
+  }, []);
+
   // Recarregar dados
   const refresh = () => {
     setInscritos(getInscritos());
@@ -93,13 +102,20 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
   const handleAtualizarStatus = (id: string, novoStatus: StatusInscricao) => {
     const target = inscritos.find(i => i.id === id);
     if (target) {
+      let turmaId = target.turmaId;
+      if (novoStatus === 'Turma definida' && !turmaId) {
+        const turmasCompativeis = turmas.filter(t => t.modalidade === target.modalidade);
+        if (turmasCompativeis.length > 0) {
+          turmaId = turmasCompativeis[0].id;
+        }
+      }
       salvarInscrito(
-        { ...target, status: novoStatus },
+        { ...target, status: novoStatus, turmaId },
         { uid: usuarioAtual.uid, nome: usuarioAtual.nome, perfil: usuarioAtual.perfil }
       );
       refresh();
       if (inscritoSelecionado?.id === id) {
-        setInscritoSelecionado(prev => prev ? { ...prev, status: novoStatus } : null);
+        setInscritoSelecionado(prev => prev ? { ...prev, status: novoStatus, turmaId } : null);
       }
     }
   };
@@ -284,11 +300,8 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
             <option value="TODOS">Todos os Status</option>
             <option value="Inscrição enviada">Inscrição enviada</option>
             <option value="Documentos pendentes">Documentos pendentes</option>
-            <option value="Em análise">Em análise</option>
-            <option value="Aprovada">Aprovada</option>
             <option value="Matriculada">Matriculada</option>
             <option value="Turma definida">Turma definida</option>
-            <option value="Lista de espera">Lista de espera</option>
           </select>
         </div>
       </div>
@@ -378,11 +391,8 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                       >
                         <option value="Inscrição enviada">Inscrição enviada</option>
                         <option value="Documentos pendentes">Documentos pendentes</option>
-                        <option value="Em análise">Em análise</option>
-                        <option value="Aprovada">Aprovada</option>
                         <option value="Matriculada">Matriculada</option>
                         <option value="Turma definida">Turma definida</option>
-                        <option value="Lista de espera">Lista de espera</option>
                       </select>
                     </td>
 
@@ -591,12 +601,8 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                       >
                         <option value="Inscrição enviada">Inscrição enviada</option>
                         <option value="Documentos pendentes">Documentos pendentes</option>
-                        <option value="Em análise">Em análise</option>
-                        <option value="Aprovada">Aprovada</option>
                         <option value="Matriculada">Matriculada</option>
                         <option value="Turma definida">Turma definida</option>
-                        <option value="Lista de espera">Lista de espera</option>
-                        <option value="Cancelada">Cancelada</option>
                       </select>
                     </div>
                     <div>

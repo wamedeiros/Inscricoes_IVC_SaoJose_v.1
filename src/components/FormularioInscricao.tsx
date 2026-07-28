@@ -231,7 +231,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
     setCarregando(true);
 
     try {
-      const statusInicial = documentos.length > 0 ? 'Em análise' : 'Documentos pendentes';
+      const statusInicial = documentos.length > 0 ? 'Inscrição enviada' : 'Documentos pendentes';
 
       const novoInscrito = salvarInscrito({
         nome,
