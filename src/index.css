@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-natural-bg: #F7F5F2;
+  --color-natural-card: #FFFFFF;
+  --color-natural-subtle: #FAF9F7;
+  --color-natural-pill: #F3F1ED;
+  --color-natural-border: #E5E1DA;
+  --color-natural-primary: #8C7851;
+  --color-natural-primary-hover: #7A6946;
+  --color-natural-dark: #2D2A26;
+  --color-natural-text: #4A443F;
+  --color-natural-muted: #A69F95;
+  --color-natural-gold: #C4A976;
+}
+
+body {
+  background-color: #F7F5F2;
+  color: #4A443F;
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Catequese Igreja São José v.1",
+  "description": "Sistema de gestão de inscrições e turmas da Catequese (IVC) da Igreja São José - Lar de Misericórdia",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Inscrito": {
+      "title": "Inscrito",
+      "description": "Ficha de inscrição do catequizando no IVC",
+      "type": "object",
+      "properties": {
+        "protocolo": { "type": "string" },
+        "nome": { "type": "string", "minLength": 3, "maxLength": 150 },
+        "dataNascimento": { "type": "string" },
+        "idadeCalculada": { "type": "number" },
+        "modalidade": { "type": "string", "enum": ["PRE", "EUC", "CRI", "ADU"] },
+        "ondeNasceu": { "type": "string" },
+        "endereco": { "type": "string" },
+        "telefone": { "type": "string" },
+        "email": { "type": "string" },
+        "batizado": { "type": "boolean" },
+        "status": { "type": "string" },
+        "paroquiaId": { "type": "string" },
+        "comunidadeId": { "type": "string" },
+        "turmaId": { "type": "string" }
+      },
+      "required": ["protocolo", "nome", "dataNascimento", "modalidade", "status", "paroquiaId"]
+    },
+    "Responsavel": {
+      "title": "Responsável",
+      "description": "Pai, mãe ou responsável legal do catequizando",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "cpf": { "type": "string" },
+        "telefone": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["nome", "cpf", "telefone"]
+    },
+    "Turma": {
+      "title": "Turma",
+      "description": "Turma de catequese da paróquia",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "modalidade": { "type": "string" },
+        "vagasMaximas": { "type": "number" },
+        "vagasOcupadas": { "type": "number" }
+      },
+      "required": ["nome", "modalidade", "vagasMaximas"]
+    }
+  },
+  "firestore": {
+    "/inscritos/{inscritoId}": {
+      "schema": "Inscrito",
+      "description": "Coleção principal de inscrições da catequese"
+    },
+    "/responsaveis/{responsavelId}": {
+      "schema": "Responsavel",
+      "description": "Coleção de responsáveis legais"
+    },
+    "/turmas/{turmaId}": {
+      "schema": "Turma",
+      "description": "Coleção de turmas da paróquia"
+    }
+  }
+}

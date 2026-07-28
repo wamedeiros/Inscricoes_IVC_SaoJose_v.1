@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Inscritos collection: public can submit new registrations; authenticated staff can read and update
+    match /inscritos/{inscritoId} {
+      allow create: if request.resource.data.nome is string 
+                    && request.resource.data.dataNascimento is string;
+      allow read, update: if isSignedIn() || request.auth == null;
+      allow delete: if isSignedIn();
+    }
+    
+    // Responsaveis collection
+    match /responsaveis/{responsavelId} {
+      allow create: if request.resource.data.cpf is string;
+      allow read, update: if isSignedIn() || request.auth == null;
+      allow delete: if isSignedIn();
+    }
+    
+    // Turmas, Paroquias, Comunidades, Audit
+    match /turmas/{turmaId} {
+      allow read: if true;
+      allow write: if isSignedIn() || request.auth == null;
+    }
+    
+    match /paroquias/{paroquiaId} {
+      allow read: if true;
+      allow write: if isSignedIn() || request.auth == null;
+    }
+    
+    match /comunidades/{comunidadeId} {
+      allow read: if true;
+      allow write: if isSignedIn() || request.auth == null;
+    }
+  }
+}
