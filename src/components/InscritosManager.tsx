@@ -299,7 +299,6 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
           >
             <option value="TODOS">Todos os Status</option>
             <option value="Inscrição enviada">Inscrição enviada</option>
-            <option value="Documentos pendentes">Documentos pendentes</option>
             <option value="Matriculada">Matriculada</option>
             <option value="Turma definida">Turma definida</option>
           </select>
@@ -600,7 +599,6 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                         className="w-full p-2 border border-[#E5E1DA] rounded-lg bg-white font-semibold"
                       >
                         <option value="Inscrição enviada">Inscrição enviada</option>
-                        <option value="Documentos pendentes">Documentos pendentes</option>
                         <option value="Matriculada">Matriculada</option>
                         <option value="Turma definida">Turma definida</option>
                       </select>

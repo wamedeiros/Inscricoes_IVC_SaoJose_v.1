@@ -17,8 +17,8 @@ export const DEFAULT_CONFIG: ConfigSistema = {
   ],
   vagasPadraoTurma: 25,
   mensagens: {
-    confirmacaoInscricao: 'Sua inscrição para a Catequese da Igreja São José – Lar de Misericórdia foi enviada com sucesso! Agora, imprima a ficha de inscrição, assine-a e entregue-a à equipe da Catequese até o dia 30 de agosto de 2026. A inscrição somente será confirmada após a entrega da ficha assinada dentro do prazo.',
-    documentosPendentes: 'Atenção: faltam documentos para a validação da sua inscrição na catequese.',
+    confirmacaoInscricao: 'Sua inscrição para a Catequese da Igreja São José – Lar de Misericórdia foi enviada com sucesso!',
+    documentosPendentes: 'Inscrição aguardando definição de turma.',
     aprovacaoMatricula: 'Parabéns! Sua matrícula foi confirmada e sua turma foi atribuída.'
   },
   termoLGPDTexto: `Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), autorizo a Igreja São José - Lar de Misericórdia a coletar, armazenar e processar os dados pessoais e sensíveis fornecidos nesta ficha exclusivamente para fins de inscrição, organização de turmas, formação religiosa e comunicação pastoral relacionadas à Iniciação à Vida Cristã (IVC). Comprometemo-nos a não compartilhar os dados com terceiros não autorizados.`

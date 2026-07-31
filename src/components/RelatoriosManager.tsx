@@ -3,13 +3,11 @@ import {
   FileSpreadsheet,
   Printer,
   Calendar,
-  FileCheck2,
 } from 'lucide-react';
 import { getInscritos, getTurmas, getComunidades, getCatequistas, subscribeStorage } from '../services/storage';
 import {
   gerarListaPresencaPDF,
   gerarRelatorioAniversariantesPDF,
-  gerarRelatorioDocPendentesPDF,
   AniversarianteItem
 } from '../services/pdfGenerator';
 import { exportarInscritosExcel } from '../services/excelGenerator';
@@ -78,11 +76,6 @@ export const RelatoriosManager: React.FC = () => {
     gerarRelatorioAniversariantesPDF(listaAniversariantes, NORM_MESES[mesAniversario] || 'Mês');
   };
 
-  const handleGerarDocPendentes = () => {
-    const pendentes = inscritos.filter(i => i.status === 'Documentos pendentes' || i.documentos.length === 0);
-    gerarRelatorioDocPendentesPDF(pendentes);
-  };
-
   const handleGerarPresenca = () => {
     const t = turmas.find(x => x.id === turmaSelecionadaId);
     if (!t) return;
@@ -97,7 +90,7 @@ export const RelatoriosManager: React.FC = () => {
         <span className="text-xs font-bold uppercase tracking-wider text-[#8C7851] bg-[#F3F1ED] px-2.5 py-1 rounded-md border border-[#E5E1DA]">
           Central de Relatórios & Impressão
         </span>
-        <h2 className="text-2xl font-black text-[#2D2A26] mt-1">Emissão de Listas, Documentos e Planilhas</h2>
+        <h2 className="text-2xl font-black text-[#2D2A26] mt-1">Emissão de Listas e Planilhas</h2>
         <p className="text-xs text-[#5D574F]">
           Gere diários oficiais em PDF ou exporte planilhas completas em Excel para acompanhamento da catequese.
         </p>
@@ -107,7 +100,7 @@ export const RelatoriosManager: React.FC = () => {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* Relatório 1: Diário de Presença por Turma */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
+        <div className="bg-[#FAF9F7] p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="w-10 h-10 bg-[#F3F1ED] text-[#8C7851] rounded-xl flex items-center justify-center">
               <Printer className="w-5 h-5" />
@@ -139,7 +132,7 @@ export const RelatoriosManager: React.FC = () => {
         </div>
 
         {/* Relatório 2: Aniversariantes do Mês */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
+        <div className="bg-[#FAF9F7] p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="w-10 h-10 bg-[#F3F1ED] text-[#8C7851] rounded-xl flex items-center justify-center">
               <Calendar className="w-5 h-5" />
@@ -170,29 +163,8 @@ export const RelatoriosManager: React.FC = () => {
           </button>
         </div>
 
-        {/* Relatório 3: Documentos Pendentes */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="w-10 h-10 bg-[#F3F1ED] text-[#8C7851] rounded-xl flex items-center justify-center">
-              <FileCheck2 className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-[#2D2A26] text-sm">Relatório de Pendências Documentais</h3>
-            <p className="text-xs text-[#5D574F]">
-              Lista de catequizandos com certidões de batismo ou residência pendentes para regularização na Secretaria.
-            </p>
-          </div>
-
-          <button
-            onClick={handleGerarDocPendentes}
-            className="w-full py-2.5 bg-[#8C7851] hover:bg-[#7A6946] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow cursor-pointer transition-all"
-          >
-            <Printer className="w-4 h-4" />
-            Gerar PDF de Pendências
-          </button>
-        </div>
-
-        {/* Relatório 4: Exportação Geral Excel */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
+        {/* Relatório 3: Exportação Geral Excel */}
+        <div className="bg-[#FAF9F7] p-6 rounded-2xl shadow-sm border border-[#E5E1DA] space-y-4 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="w-10 h-10 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center">
               <FileSpreadsheet className="w-5 h-5" />
@@ -216,3 +188,4 @@ export const RelatoriosManager: React.FC = () => {
     </div>
   );
 };
+

@@ -46,7 +46,7 @@ export const AdminDashboard: React.FC = () => {
 
   // KPIs
   const totalInscritos = inscritos.length;
-  const docsPendentesCount = inscritos.filter(i => i.status === 'Documentos pendentes' || i.documentos.length === 0).length;
+  const matriculadosCount = inscritos.filter(i => i.status === 'Matriculada' || i.status === 'Turma definida').length;
   const listaEsperaTotal = turmas.reduce((acc, t) => acc + (t.listaEsperaCount || 0), 0);
   const vagasTotais = turmas.reduce((acc, t) => acc + t.vagasMaximas, 0);
   const vagasOcupadasTotais = turmas.reduce((acc, t) => acc + t.vagasOcupadas, 0);
@@ -137,13 +137,13 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#E5E1DA] flex items-center gap-4">
-          <div className="p-3 bg-[#F3F1ED] text-[#8C7851] rounded-xl border border-[#E5E1DA]">
-            <AlertTriangle className="w-6 h-6" />
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200">
+            <UserCheck className="w-6 h-6 text-emerald-700" />
           </div>
           <div>
-            <span className="text-xs font-bold text-[#A69F95] uppercase tracking-wider block">Docs Pendentes</span>
-            <span className="text-2xl font-black text-[#8C7851]">{docsPendentesCount}</span>
-            <span className="text-[10px] text-[#8C7851] font-medium block mt-0.5">Requer atenção</span>
+            <span className="text-xs font-bold text-[#A69F95] uppercase tracking-wider block">Matriculados</span>
+            <span className="text-2xl font-black text-emerald-800">{matriculadosCount}</span>
+            <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">Matrícula ou turma</span>
           </div>
         </div>
       </div>

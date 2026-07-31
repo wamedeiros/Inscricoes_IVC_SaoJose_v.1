@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Church,
   LayoutDashboard,
@@ -13,8 +13,6 @@ import {
   Lock,
   LogOut,
   UserCheck,
-  Share2,
-  Check,
   ShieldCheck
 } from 'lucide-react';
 import { UsuarioSistema } from '../types';
@@ -40,15 +38,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLogin,
   onLogoutAdmin
 }) => {
-  const [copiado, setCopiado] = useState(false);
-
-  const handleCopiarLink = () => {
-    const url = window.location.href.split('#')[0];
-    navigator.clipboard.writeText(url);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 3000);
-  };
-
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-[#E5E1DA]">
       {/* Faixa Superior - Identificação & Modo do Sistema */}
@@ -59,25 +48,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botão de Compartilhar Link de Inscrição */}
-          <button
-            onClick={handleCopiarLink}
-            title="Copiar link direto para envio de inscrições"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#4A443F] hover:bg-[#5D574F] text-[#C4A976] border border-[#5D574F] font-semibold text-[11px] transition-colors cursor-pointer"
-          >
-            {copiado ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300">Link Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-[#C4A976]" />
-                <span>Copiar Link de Inscrição</span>
-              </>
-            )}
-          </button>
-
           {/* Estado de Acesso Administrativo vs Público */}
           {isAdminLoggedIn ? (
             <div className="flex items-center gap-2 bg-[#8C7851]/30 border border-[#8C7851] px-3 py-0.5 rounded-full">

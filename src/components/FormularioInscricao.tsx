@@ -231,7 +231,10 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
     setCarregando(true);
 
     try {
-      const statusInicial = documentos.length > 0 ? 'Inscrição enviada' : 'Documentos pendentes';
+      const statusInicial = 'Inscrição enviada';
+      const telFinal = resultadoCalculo.idadeCalculada < 13 ? (telefone || telefonePai || telefoneMae || '') : telefone;
+      const emailFinal = resultadoCalculo.idadeCalculada < 13 ? (email || emailPai || emailMae || '') : email;
+      const crismaFinal = resultadoCalculo.idadeCalculada < 13 ? false : crisma;
 
       const novoInscrito = salvarInscrito({
         nome,
@@ -242,15 +245,15 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
         endereco,
         bairro,
         cidade,
-        telefone,
-        email,
+        telefone: telFinal,
+        email: emailFinal,
         batizado,
         localBatismo,
         dataBatismo,
         eucaristia,
         localEucaristia,
         dataEucaristia,
-        crisma,
+        crisma: crismaFinal,
         estadoCivil: modalidade === 'ADU' ? estadoCivil : undefined,
         motivacao: modalidade === 'ADU' ? motivacao : undefined,
         responsavelId: responsavelIdFinal,
@@ -275,7 +278,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
         preferenciasHorario,
         paroquiaId,
         comunidadeId,
-        documentos,
+        documentos: [],
         status: statusInicial,
         termoAceite: {
           aceito: true,
@@ -314,8 +317,8 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
           </p>
         </div>
 
-        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-950 rounded-xl text-xs sm:text-sm font-medium text-left leading-relaxed shadow-sm">
-          Sua inscrição para a Catequese da Igreja São José – Lar de Misericórdia foi enviada com sucesso! Agora, imprima a ficha de inscrição, assine-a e entregue-a à equipe da Catequese até o dia 30 de agosto de 2026. A inscrição somente será confirmada após a entrega da ficha assinada dentro do prazo.
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-950 rounded-xl text-xs sm:text-sm font-bold text-center leading-relaxed shadow-sm">
+          Sua inscrição para a Catequese da Igreja São José – Lar de Misericórdia foi enviada com sucesso!
         </div>
 
         <div className="bg-[#FAF9F7] p-4 rounded-xl text-left border border-[#E5E1DA] grid sm:grid-cols-2 gap-3 text-xs">
@@ -511,30 +514,33 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone / WhatsApp para Contato *</label>
-              <input
-                type="tel"
-                required
-                placeholder="(86) 99999-9999"
-                value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
-              />
-            </div>
+          {/* Dados de Contato do Catequizando (Exibidos apenas para a partir de 13 anos) */}
+          {resultadoCalculo.idadeCalculada >= 13 && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone / WhatsApp do Catequizando *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="(86) 99999-9999"
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail</label>
-              <input
-                type="email"
-                placeholder="exemplo@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
-              />
+              <div>
+                <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail do Catequizando</label>
+                <input
+                  type="email"
+                  placeholder="exemplo@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Unidade Catequética Única */}
           <div className="pt-2">
@@ -649,32 +655,34 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Já recebeu a Crisma?</label>
-                  <div className="flex items-center gap-4 text-xs">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="crisma"
-                        checked={crisma === true}
-                        onChange={() => setCrisma(true)}
-                        className="accent-[#8C7851]"
-                      />
-                      <span>Sim</span>
-                    </label>
+                {resultadoCalculo.idadeCalculada >= 13 && (
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Já recebeu a Crisma?</label>
+                    <div className="flex items-center gap-4 text-xs">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="crisma"
+                          checked={crisma === true}
+                          onChange={() => setCrisma(true)}
+                          className="accent-[#8C7851]"
+                        />
+                        <span>Sim</span>
+                      </label>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="crisma"
-                        checked={crisma === false}
-                        onChange={() => setCrisma(false)}
-                        className="accent-[#8C7851]"
-                      />
-                      <span>Não</span>
-                    </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="crisma"
+                          checked={crisma === false}
+                          onChange={() => setCrisma(false)}
+                          className="accent-[#8C7851]"
+                        />
+                        <span>Não</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -765,229 +773,263 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
         </section>
 
         {/* PASSO 3: DADOS DOS PAIS E RESPONSÁVEL LEGAL */}
-        {(resultadoCalculo.modalidade === 'PRE' || resultadoCalculo.modalidade === 'EUC' || resultadoCalculo.modalidade === 'PER' || resultadoCalculo.modalidade === 'CRI' || !resultadoCalculo.modalidade) && (
-          <section className="space-y-4">
-            <div className="border-b border-[#E5E1DA] pb-2 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#8C7851] text-white text-xs font-bold flex items-center justify-center">3</span>
-              <h3 className="text-base font-bold text-[#2D2A26]">Filiação (Pai e Mãe) & Responsável Legal</h3>
-            </div>
+        <section className="space-y-4">
+          <div className="border-b border-[#E5E1DA] pb-2 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-[#8C7851] text-white text-xs font-bold flex items-center justify-center">3</span>
+            <h3 className="text-base font-bold text-[#2D2A26]">
+              {resultadoCalculo.modalidade === 'ADU' ? 'Filiação (Nome do Pai e da Mãe)' : 'Filiação (Pai e Mãe) & Responsável Legal'}
+            </h3>
+          </div>
 
-            {/* INFORMACÕES DOS PAIS (OBRIGATÓRIAS) */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              {/* DADOS DO PAI */}
-              <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
-                <span className="text-xs font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">
-                  Dados do Pai (Obrigatorio) *
-                </span>
-
+          {resultadoCalculo.modalidade === 'ADU' ? (
+            <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-4">
+              <span className="text-xs font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">
+                Filiação (Opcional)
+              </span>
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo do Pai *</label>
+                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo do Pai</label>
                   <input
                     type="text"
-                    required
                     placeholder="Nome completo do Pai"
                     value={nomePai}
                     onChange={(e) => setNomePai(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl bg-white focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
                   />
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone do Pai *</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="(86) 99999-9999"
-                      value={telefonePai}
-                      onChange={(e) => setTelefonePai(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail do Pai</label>
-                    <input
-                      type="email"
-                      placeholder="pai@email.com"
-                      value={emailPai}
-                      onChange={(e) => setEmailPai(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-1 text-[11px] space-y-1">
-                  <span className="font-semibold text-[#5D574F] block">O Pai já recebeu os Sacramentos de Iniciação Cristã?</span>
-                  <div className="flex flex-wrap gap-3">
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiBatizado} onChange={(e) => setPaiBatizado(e.target.checked)} className="accent-[#8C7851]" /> Batismo</label>
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiEucaristia} onChange={(e) => setPaiEucaristia(e.target.checked)} className="accent-[#8C7851]" /> Eucaristia</label>
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiCrisma} onChange={(e) => setPaiCrisma(e.target.checked)} className="accent-[#8C7851]" /> Crisma</label>
-                  </div>
-                </div>
-              </div>
-
-              {/* DADOS DA MÃE */}
-              <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
-                <span className="text-xs font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">
-                  Dados da Mãe (Obrigatório) *
-                </span>
-
                 <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo da Mãe *</label>
+                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo da Mãe</label>
                   <input
                     type="text"
-                    required
                     placeholder="Nome completo da Mãe"
                     value={nomeMae}
                     onChange={(e) => setNomeMae(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl bg-white focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
                   />
                 </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* INFORMACÕES DOS PAIS */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* DADOS DO PAI */}
+                <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
+                  <span className="text-xs font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">
+                    Dados do Pai (Obrigatório) *
+                  </span>
 
-                <div className="grid sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone da Mãe *</label>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo do Pai *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nome completo do Pai"
+                      value={nomePai}
+                      onChange={(e) => setNomePai(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone do Pai *</label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="(86) 99999-9999"
+                        value={telefonePai}
+                        onChange={(e) => setTelefonePai(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail do Pai</label>
+                      <input
+                        type="email"
+                        placeholder="pai@email.com"
+                        value={emailPai}
+                        onChange={(e) => setEmailPai(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] space-y-1">
+                    <span className="font-semibold text-[#5D574F] block">O Pai já recebeu os Sacramentos de Iniciação Cristã?</span>
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiBatizado} onChange={(e) => setPaiBatizado(e.target.checked)} className="accent-[#8C7851]" /> Batismo</label>
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiEucaristia} onChange={(e) => setPaiEucaristia(e.target.checked)} className="accent-[#8C7851]" /> Eucaristia</label>
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={paiCrisma} onChange={(e) => setPaiCrisma(e.target.checked)} className="accent-[#8C7851]" /> Crisma</label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DADOS DA MÃE */}
+                <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
+                  <span className="text-xs font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">
+                    Dados da Mãe (Obrigatório) *
+                  </span>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome Completo da Mãe *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nome completo da Mãe"
+                      value={nomeMae}
+                      onChange={(e) => setNomeMae(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone da Mãe *</label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="(86) 99999-9999"
+                        value={telefoneMae}
+                        onChange={(e) => setTelefoneMae(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail da Mãe</label>
+                      <input
+                        type="email"
+                        placeholder="mae@email.com"
+                        value={emailMae}
+                        onChange={(e) => setEmailMae(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] space-y-1">
+                    <span className="font-semibold text-[#5D574F] block">A Mãe já recebeu os Sacramentos de Iniciação Cristã?</span>
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeBatizada} onChange={(e) => setMaeBatizada(e.target.checked)} className="accent-[#8C7851]" /> Batismo</label>
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeEucaristia} onChange={(e) => setMaeEucaristia(e.target.checked)} className="accent-[#8C7851]" /> Eucaristia</label>
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeCrisma} onChange={(e) => setMaeCrisma(e.target.checked)} className="accent-[#8C7851]" /> Crisma</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SITUAÇÃO MATRIMONIAL E FAMILIAR */}
+              <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3 text-xs">
+                <span className="font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">Situação Matrimonial dos Pais</span>
+                
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Os pais realizaram o Sacramento do Matrimônio?</label>
+                    <div className="flex items-center gap-4 text-xs mb-2">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="paisMatrimonio" checked={paisMatrimonio} onChange={() => setPaisMatrimonio(true)} className="accent-[#8C7851]" />
+                        <span>Sim</span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="paisMatrimonio" checked={!paisMatrimonio} onChange={() => setPaisMatrimonio(false)} className="accent-[#8C7851]" />
+                        <span>Não</span>
+                      </label>
+                    </div>
+                    {paisMatrimonio && (
+                      <input
+                        type="text"
+                        placeholder="Onde realizaram o Matrimônio? (Paróquia / Cidade)"
+                        value={ondeMatrimonioPais}
+                        onChange={(e) => setOndeMatrimonioPais(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg bg-white"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Os pais são divorciados?</label>
+                    <div className="flex items-center gap-4 text-xs mb-2">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="paisDivorciados" checked={paisDivorciados} onChange={() => setPaisDivorciados(true)} className="accent-[#8C7851]" />
+                        <span>Sim</span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="paisDivorciados" checked={!paisDivorciados} onChange={() => setPaisDivorciados(false)} className="accent-[#8C7851]" />
+                        <span>Não</span>
+                      </label>
+                    </div>
+                    {paisDivorciados && (
+                      <input
+                        type="text"
+                        placeholder="De quem é a guarda do catequizando?"
+                        value={guardaDivorcio}
+                        onChange={(e) => setGuardaDivorcio(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg bg-white"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* DADOS DO RESPONSÁVEL LEGAL (OPCIONAL) */}
+              <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
+                <div className="border-b border-[#E5E1DA] pb-1.5">
+                  <span className="text-xs font-bold text-[#2D2A26]">
+                    Responsável Legal (Opcional)
+                  </span>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome do Responsável Legal (se houver)</label>
+                    <input
+                      type="text"
+                      placeholder="Nome Completo do Responsável Legal"
+                      value={respNome}
+                      onChange={(e) => setRespNome(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">CPF do Responsável (Opcional)</label>
+                    <input
+                      type="text"
+                      placeholder="000.000.000-00"
+                      value={respCpf}
+                      onChange={(e) => setRespCpf(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone Principal / WhatsApp</label>
                     <input
                       type="tel"
-                      required
                       placeholder="(86) 99999-9999"
-                      value={telefoneMae}
-                      onChange={(e) => setTelefoneMae(e.target.value)}
+                      value={respTelefone}
+                      onChange={(e) => setRespTelefone(e.target.value)}
                       className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail da Mãe</label>
+                    <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail do Responsável</label>
                     <input
                       type="email"
-                      placeholder="mae@email.com"
-                      value={emailMae}
-                      onChange={(e) => setEmailMae(e.target.value)}
+                      placeholder="email@responsavel.com"
+                      value={respEmail}
+                      onChange={(e) => setRespEmail(e.target.value)}
                       className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
                     />
                   </div>
                 </div>
-
-                <div className="pt-1 text-[11px] space-y-1">
-                  <span className="font-semibold text-[#5D574F] block">A Mãe já recebeu os Sacramentos de Iniciação Cristã?</span>
-                  <div className="flex flex-wrap gap-3">
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeBatizada} onChange={(e) => setMaeBatizada(e.target.checked)} className="accent-[#8C7851]" /> Batismo</label>
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeEucaristia} onChange={(e) => setMaeEucaristia(e.target.checked)} className="accent-[#8C7851]" /> Eucaristia</label>
-                    <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={maeCrisma} onChange={(e) => setMaeCrisma(e.target.checked)} className="accent-[#8C7851]" /> Crisma</label>
-                  </div>
-                </div>
               </div>
-            </div>
-
-            {/* SITUAÇÃO MATRIMONIAL E FAMILIAR */}
-            <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3 text-xs">
-              <span className="font-bold text-[#2D2A26] block border-b border-[#E5E1DA] pb-1">Situação Matrimonial dos Pais</span>
-              
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Os pais realizaram o Sacramento do Matrimônio?</label>
-                  <div className="flex items-center gap-4 text-xs mb-2">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="radio" name="paisMatrimonio" checked={paisMatrimonio} onChange={() => setPaisMatrimonio(true)} className="accent-[#8C7851]" />
-                      <span>Sim</span>
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="radio" name="paisMatrimonio" checked={!paisMatrimonio} onChange={() => setPaisMatrimonio(false)} className="accent-[#8C7851]" />
-                      <span>Não</span>
-                    </label>
-                  </div>
-                  {paisMatrimonio && (
-                    <input
-                      type="text"
-                      placeholder="Onde realizaram o Matrimônio? (Paróquia / Cidade)"
-                      value={ondeMatrimonioPais}
-                      onChange={(e) => setOndeMatrimonioPais(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg bg-white"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Os pais são divorciados?</label>
-                  <div className="flex items-center gap-4 text-xs mb-2">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="radio" name="paisDivorciados" checked={paisDivorciados} onChange={() => setPaisDivorciados(true)} className="accent-[#8C7851]" />
-                      <span>Sim</span>
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="radio" name="paisDivorciados" checked={!paisDivorciados} onChange={() => setPaisDivorciados(false)} className="accent-[#8C7851]" />
-                      <span>Não</span>
-                    </label>
-                  </div>
-                  {paisDivorciados && (
-                    <input
-                      type="text"
-                      placeholder="De quem é a guarda do catequizando?"
-                      value={guardaDivorcio}
-                      onChange={(e) => setGuardaDivorcio(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg bg-white"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* DADOS DO RESPONSÁVEL LEGAL (OPCIONAL) */}
-            <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3">
-              <div className="border-b border-[#E5E1DA] pb-1.5">
-                <span className="text-xs font-bold text-[#2D2A26]">
-                  Responsável Legal (Opcional)
-                </span>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4 pt-1">
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Nome do Responsável Legal (se houver)</label>
-                  <input
-                    type="text"
-                    placeholder="Nome Completo do Responsável Legal"
-                    value={respNome}
-                    onChange={(e) => setRespNome(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">CPF do Responsável (Opcional)</label>
-                  <input
-                    type="text"
-                    placeholder="000.000.000-00"
-                    value={respCpf}
-                    onChange={(e) => setRespCpf(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">Telefone Principal / WhatsApp</label>
-                  <input
-                    type="tel"
-                    placeholder="(86) 99999-9999"
-                    value={respTelefone}
-                    onChange={(e) => setRespTelefone(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2D2A26] mb-1">E-mail do Responsável</label>
-                  <input
-                    type="email"
-                    placeholder="email@responsavel.com"
-                    value={respEmail}
-                    onChange={(e) => setRespEmail(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-xl bg-white"
-                  />
-                </div>
-              </div>
-            </div>
+            </>
+          )}
 
             {/* AUTORIZAÇÃO DE FOTOS E IMAGENS */}
             <div className="p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-1.5 text-xs">
@@ -1009,7 +1051,6 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
               </div>
             </div>
           </section>
-        )}
 
         {/* PASSO 4: PREFERÊNCIA DE HORÁRIOS / CONSULTA DE DISPONIBILIDADE */}
         <section className="space-y-4">
@@ -1034,8 +1075,13 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
 
           {/* Opções de Horários por Modalidade */}
           {(() => {
+            const isPre = resultadoCalculo.modalidade === 'PRE';
             const isAdulto = resultadoCalculo.modalidade === 'ADU';
-            const opcoes = isAdulto
+            const opcoes = isPre
+              ? [
+                  'Domingo – 10:00 às 11:00'
+                ]
+              : isAdulto
               ? [
                   'Domingo (8h30)',
                   'Segunda-feira (19h00)',
@@ -1085,51 +1131,6 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
               </div>
             );
           })()}
-        </section>
-
-        {/* PASSO 5: UPLOAD DE DOCUMENTOS (Opcional/Pendentes) */}
-        <section className="space-y-4">
-          <div className="border-b border-[#E5E1DA] pb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#8C7851] text-white text-xs font-bold flex items-center justify-center">5</span>
-              <h3 className="text-base font-bold text-[#2D2A26]">Documentos Anexos (PDF ou Imagem)</h3>
-            </div>
-            <span className="text-[11px] font-medium text-[#A69F95]">Podem ser enviados agora ou entregues na Secretaria</span>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              'Certidão de Nascimento',
-              'Certificado de Batismo',
-              'Comprovante de Residência',
-              'RG / CPF'
-            ].map((tipoDoc: any) => {
-              const docAnexado = documentos.find(d => d.tipo === tipoDoc);
-              return (
-                <div key={tipoDoc} className="p-3 bg-[#FAF9F7] border border-[#E5E1DA] rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-[#2D2A26] block">{tipoDoc}</span>
-                    {docAnexado ? (
-                      <span className="text-[10px] text-emerald-700 font-medium">✓ Anexado: {docAnexado.nomeArquivo}</span>
-                    ) : (
-                      <span className="text-[10px] text-[#A69F95]">Pendente</span>
-                    )}
-                  </div>
-
-                  <label className="px-3 py-1.5 bg-[#F3F1ED] hover:bg-[#E5E1DA] text-[#8C7851] rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Anexar</span>
-                    <input
-                      type="file"
-                      accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={(e) => handleSimularUploadDoc(e, tipoDoc)}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              );
-            })}
-          </div>
         </section>
 
         {/* TERMO DE CONSENTIMENTO LGPD */}

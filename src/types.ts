@@ -23,7 +23,6 @@ export const MODALIDADE_SIGLAS: Record<ModalidadeCatequese, string> = {
 
 export type StatusInscricao =
   | 'Inscrição enviada'
-  | 'Documentos pendentes'
   | 'Matriculada'
   | 'Turma definida';
 
