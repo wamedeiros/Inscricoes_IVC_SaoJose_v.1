@@ -1,4 +1,15 @@
 import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  where
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import {
   ConfigSistema,
   Inscrito,
   Responsavel,
@@ -14,17 +25,19 @@ import {
 } from '../types';
 import { DEFAULT_CONFIG } from './config';
 
-const STORAGE_KEYS = {
-  INSCRITOS: 'ivc_teresina_inscritos_v2',
-  RESPONSAVEIS: 'ivc_teresina_responsaveis_v2',
-  PAROQUIAS: 'ivc_teresina_paroquias_v2',
-  COMUNIDADES: 'ivc_teresina_comunidades_v2',
-  CATEQUISTAS: 'ivc_teresina_catequistas_v2',
-  TURMAS: 'ivc_teresina_turmas_v2',
-  USUARIOS: 'ivc_teresina_usuarios_v2',
-  AUDITORIA: 'ivc_teresina_auditoria_v2',
-  CONFIG: 'ivc_teresina_config_v2'
-};
+// Helper para remover valores `undefined` antes de enviar ao Firestore
+function cleanUndefined<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(cleanUndefined) as unknown as T;
+  const res: any = {};
+  for (const key of Object.keys(obj)) {
+    const val = (obj as any)[key];
+    if (val !== undefined) {
+      res[key] = cleanUndefined(val);
+    }
+  }
+  return res as T;
+}
 
 // Dados Iniciais Demonstrativos para a Igreja São José - Lar de Misericórdia
 const SEED_PAROQUIAS: Paroquia[] = [
@@ -327,7 +340,7 @@ const SEED_INSCRITOS: Inscrito[] = [
     status: 'Turma definida',
     paroquiaId: 'par-01',
     comunidadeId: 'com-01',
-    turmaId: 'tur-01',
+    turmaId: 'tur-euc-dom',
     documentos: [
       { id: 'doc-1', tipo: 'Certidão de Nascimento', nomeArquivo: 'certidao_gabriel.pdf', url: '#', dataEnvio: '2028-01-15', status: 'Aprovado' },
       { id: 'doc-2', tipo: 'Certificado de Batismo', nomeArquivo: 'batismo_gabriel.pdf', url: '#', dataEnvio: '2028-01-15', status: 'Aprovado' }
@@ -340,7 +353,7 @@ const SEED_INSCRITOS: Inscrito[] = [
     },
     historicoAuditoria: [
       { id: 'aud-1', inscritoId: 'ins-01', usuarioId: 'usr-01', usuarioNome: 'Carlos Eduardo (Pai)', usuarioPerfil: 'Administrador', dataHora: '2028-01-15 10:15:00', campo: 'Status', valorAntigo: null, valorNovo: 'Inscrição enviada', descricao: 'Inscrição realizada via portal público' },
-      { id: 'aud-2', inscritoId: 'ins-01', usuarioId: 'usr-sec', usuarioNome: 'Secretaria Catedral', usuarioPerfil: 'Secretaria', dataHora: '2028-01-16 11:00:00', campo: 'Turma', valorAntigo: null, valorNovo: 'Eucaristia I - Sábado Manhã', descricao: 'Atribuído à turma pelo coordenador' }
+      { id: 'aud-2', inscritoId: 'ins-01', usuarioId: 'usr-sec', usuarioNome: 'Secretaria Catedral', usuarioPerfil: 'Secretaria', dataHora: '2028-01-16 11:00:00', campo: 'Turma', valorAntigo: null, valorNovo: 'Eucaristia - Domingo', descricao: 'Atribuído à turma pelo coordenador' }
     ]
   },
   {
@@ -376,7 +389,7 @@ const SEED_INSCRITOS: Inscrito[] = [
     status: 'Matriculada',
     paroquiaId: 'par-01',
     comunidadeId: 'com-01',
-    turmaId: 'tur-02',
+    turmaId: 'tur-cri-dom',
     documentos: [
       { id: 'doc-3', tipo: 'Certidão de Nascimento', nomeArquivo: 'certidao_beatriz.pdf', url: '#', dataEnvio: '2028-01-18', status: 'Aprovado' },
       { id: 'doc-4', tipo: 'Certificado de Eucaristia', nomeArquivo: 'eucaristia_beatriz.pdf', url: '#', dataEnvio: '2028-01-18', status: 'Aprovado' }
@@ -390,93 +403,6 @@ const SEED_INSCRITOS: Inscrito[] = [
     historicoAuditoria: [
       { id: 'aud-3', inscritoId: 'ins-02', usuarioId: 'usr-sec', usuarioNome: 'Secretaria Catedral', usuarioPerfil: 'Secretaria', dataHora: '2028-01-18 14:20:00', campo: 'Status', valorAntigo: null, valorNovo: 'Aprovada', descricao: 'Documentos analisados e aprovados' }
     ]
-  },
-  {
-    id: 'ins-03',
-    protocolo: '2028-ADU-000003',
-    nome: 'Luciano de Alencar Viana',
-    dataNascimento: '1995-11-03',
-    idadeCalculada: 32,
-    modalidade: 'ADU',
-    ondeNasceu: 'Picos - PI',
-    endereco: 'Rua São Pedro, 890',
-    bairro: 'Cabral',
-    cidade: 'Teresina',
-    telefone: '(86) 99455-8899',
-    email: 'luciano.viana@gmail.com',
-    batizado: true,
-    localBatismo: 'Paróquia de Picos',
-    dataBatismo: '1996-04-14',
-    eucaristia: false,
-    crisma: false,
-    estadoCivil: 'Solteiro(a)',
-    motivacao: 'Desejo receber o Sacramento do Matrimônio na Igreja Católica e aprofundar minha fé na comunidade.',
-    familiaPastoral: false,
-    necessidadeEspecial: false,
-    dataInscricao: '2028-01-20',
-    horaInscricao: '16:45:00',
-    status: 'Turma definida',
-    paroquiaId: 'par-01',
-    comunidadeId: 'com-01',
-    turmaId: 'tur-03',
-    documentos: [
-      { id: 'doc-5', tipo: 'RG / CPF', nomeArquivo: 'rg_luciano.pdf', url: '#', dataEnvio: '2028-01-20', status: 'Aprovado' },
-      { id: 'doc-6', tipo: 'Comprovante de Residência', nomeArquivo: 'residencia_luciano.pdf', url: '#', dataEnvio: '2028-01-20', status: 'Aprovado' }
-    ],
-    termoAceite: {
-      aceito: true,
-      dataHora: '2028-01-20 16:45:00',
-      ip: '201.12.80.4',
-      versaoTermo: '1.0 - IVC 2028'
-    },
-    historicoAuditoria: []
-  },
-  {
-    id: 'ins-04',
-    protocolo: '2028-PRE-000004',
-    nome: 'Helena Mendes Castro',
-    dataNascimento: '2021-09-10',
-    idadeCalculada: 6,
-    modalidade: 'PRE',
-    ondeNasceu: 'Teresina - PI',
-    endereco: 'Rua Barão de Uruçuí, 102',
-    bairro: 'Centro',
-    cidade: 'Teresina',
-    telefone: '(86) 99922-3344',
-    email: 'helena.mae@gmail.com',
-    batizado: true,
-    localBatismo: 'Catedral de Teresina',
-    dataBatismo: '2022-01-10',
-    eucaristia: false,
-    crisma: false,
-    nomePai: 'Marcos Castro',
-    telefonePai: '(86) 99922-3344',
-    emailPai: 'marcos.castro@gmail.com',
-    nomeMae: 'Lívia Mendes Castro',
-    telefoneMae: '(86) 99922-3355',
-    emailMae: 'livia.castro@gmail.com',
-    paiSacramentos: { batismo: true, eucaristia: true, crisma: true },
-    maeSacramentos: { batismo: true, eucaristia: true, crisma: true },
-    paisMatrimonio: true,
-    paisDivorciados: false,
-    guardaDivorcio: '',
-    preferenciasHorario: ['Domingo (10:00 às 11:00)'],
-    familiaPastoral: true,
-    qualPastoral: 'ECC - Encontro de Casais com Cristo',
-    necessidadeEspecial: false,
-    dataInscricao: '2028-01-22',
-    horaInscricao: '09:30:00',
-    status: 'Inscrição enviada',
-    paroquiaId: 'par-01',
-    comunidadeId: 'com-01',
-    documentos: [],
-    termoAceite: {
-      aceito: true,
-      dataHora: '2028-01-22 09:30:00',
-      ip: '189.40.15.8',
-      versaoTermo: '1.0 - IVC 2028'
-    },
-    historicoAuditoria: []
   }
 ];
 
@@ -484,8 +410,19 @@ const SEED_USUARIOS: UsuarioSistema[] = [
   { uid: 'usr-admin', nome: 'Wallison Angelim Medeiros (Coordenador)', email: 'wamedeiros@gmail.com', perfil: 'Administrador', paroquiaId: 'par-01', ativo: true },
   { uid: 'usr-sec', nome: 'Rosângela Ferreira (Secretária)', email: 'secretaria.saojose@gmail.com', perfil: 'Secretaria', paroquiaId: 'par-01', ativo: true },
   { uid: 'usr-coord', nome: 'Dra. Teresa Cristina (Coord. Catequese)', email: 'coord.saojose@gmail.com', perfil: 'Coordenador', paroquiaId: 'par-01', ativo: true },
-  { uid: 'usr-cat', nome: 'Maria do Socorro Alves (Catequista)', email: 'socorro.catequese@gmail.com', perfil: 'Catequista', paroquiaId: 'par-01', turmasAtribuidas: ['tur-01', 'tur-04'], ativo: true }
+  { uid: 'usr-cat', nome: 'Maria do Socorro Alves (Catequista)', email: 'socorro.catequese@gmail.com', perfil: 'Catequista', paroquiaId: 'par-01', turmasAtribuidas: ['tur-pre-dom', 'tur-euc-dom'], ativo: true }
 ];
+
+// Cache local sincronizado em tempo real com o Firestore
+let cachedInscritos: Inscrito[] = [];
+let cachedResponsaveis: Responsavel[] = [];
+let cachedParoquias: Paroquia[] = [];
+let cachedComunidades: Comunidade[] = [];
+let cachedCatequistas: Catequista[] = [];
+let cachedTurmas: Turma[] = [];
+let cachedUsuarios: UsuarioSistema[] = [];
+let cachedAuditoria: RegistroAuditoria[] = [];
+let cachedConfig: ConfigSistema = DEFAULT_CONFIG;
 
 // Barramento Reativo em Memória
 type Listener = () => void;
@@ -502,123 +439,190 @@ export function subscribeStorage(callback: Listener): () => void {
   };
 }
 
-// Helpers de Leitura e Escrita LocalStorage
-function getItem<T>(key: string, defaultValue: T): T {
-  try {
-    const item = localStorage.getItem(key);
-    if (!item) return defaultValue;
-    return JSON.parse(item) as T;
-  } catch (err) {
-    console.warn(`Erro ao carregar chave ${key}:`, err);
-    return defaultValue;
-  }
-}
+let isInitialized = false;
 
-function setItem<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    notify();
-  } catch (err) {
-    console.error(`Erro ao salvar chave ${key}:`, err);
-  }
-}
-
-// Inicializador
+/**
+ * Inicializador da Conexão em Tempo Real com Firestore
+ * Conecta-se às coleções remotas e sincroniza os dados no dispositivo
+ */
 export function initStorage(): void {
-  // Garantir a data de referência 30/04/2028
-  const cfg = getItem<ConfigSistema>(STORAGE_KEYS.CONFIG, DEFAULT_CONFIG);
-  if (cfg.dataReferencia !== '2028-04-30') {
-    setItem(STORAGE_KEYS.CONFIG, DEFAULT_CONFIG);
-  }
+  if (isInitialized) return;
+  isInitialized = true;
 
-  localStorage.setItem(STORAGE_KEYS.PAROQUIAS, JSON.stringify(SEED_PAROQUIAS));
-  localStorage.setItem(STORAGE_KEYS.COMUNIDADES, JSON.stringify(SEED_COMUNIDADES));
-  localStorage.setItem(STORAGE_KEYS.CATEQUISTAS, JSON.stringify(SEED_CATEQUISTAS));
-  localStorage.setItem(STORAGE_KEYS.TURMAS, JSON.stringify(SEED_TURMAS));
-  if (!localStorage.getItem(STORAGE_KEYS.RESPONSAVEIS)) {
-    localStorage.setItem(STORAGE_KEYS.RESPONSAVEIS, JSON.stringify(SEED_RESPONSAVEIS));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.INSCRITOS)) {
-    localStorage.setItem(STORAGE_KEYS.INSCRITOS, JSON.stringify(SEED_INSCRITOS));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.USUARIOS)) {
-    localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(SEED_USUARIOS));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.CONFIG)) {
-    localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(DEFAULT_CONFIG));
-  }
+  // Realtime listener em 'config'
+  onSnapshot(doc(db, 'config', 'default'), (snapshot) => {
+    if (snapshot.exists()) {
+      cachedConfig = snapshot.data() as ConfigSistema;
+    } else {
+      setDoc(doc(db, 'config', 'default'), cleanUndefined(DEFAULT_CONFIG));
+      cachedConfig = DEFAULT_CONFIG;
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore config:', err));
+
+  // Realtime listener em 'paroquias'
+  onSnapshot(collection(db, 'paroquias'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_PAROQUIAS.forEach(p => setDoc(doc(db, 'paroquias', p.id), cleanUndefined(p)));
+    } else {
+      cachedParoquias = snapshot.docs.map(d => d.data() as Paroquia);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore paroquias:', err));
+
+  // Realtime listener em 'comunidades'
+  onSnapshot(collection(db, 'comunidades'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_COMUNIDADES.forEach(c => setDoc(doc(db, 'comunidades', c.id), cleanUndefined(c)));
+    } else {
+      cachedComunidades = snapshot.docs.map(d => d.data() as Comunidade);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore comunidades:', err));
+
+  // Realtime listener em 'catequistas'
+  onSnapshot(collection(db, 'catequistas'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_CATEQUISTAS.forEach(c => setDoc(doc(db, 'catequistas', c.id), cleanUndefined(c)));
+    } else {
+      cachedCatequistas = snapshot.docs.map(d => d.data() as Catequista);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore catequistas:', err));
+
+  // Realtime listener em 'turmas'
+  onSnapshot(collection(db, 'turmas'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_TURMAS.forEach(t => setDoc(doc(db, 'turmas', t.id), cleanUndefined(t)));
+    } else {
+      cachedTurmas = snapshot.docs.map(d => d.data() as Turma);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore turmas:', err));
+
+  // Realtime listener em 'responsaveis'
+  onSnapshot(collection(db, 'responsaveis'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_RESPONSAVEIS.forEach(r => setDoc(doc(db, 'responsaveis', r.id), cleanUndefined(r)));
+    } else {
+      cachedResponsaveis = snapshot.docs.map(d => d.data() as Responsavel);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore responsaveis:', err));
+
+  // Realtime listener em 'inscritos'
+  onSnapshot(collection(db, 'inscritos'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_INSCRITOS.forEach(i => setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i)));
+    } else {
+      cachedInscritos = snapshot.docs.map(d => d.data() as Inscrito);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore inscritos:', err));
+
+  // Realtime listener em 'usuarios'
+  onSnapshot(collection(db, 'usuarios'), (snapshot) => {
+    if (snapshot.empty) {
+      SEED_USUARIOS.forEach(u => setDoc(doc(db, 'usuarios', u.uid), cleanUndefined(u)));
+    } else {
+      cachedUsuarios = snapshot.docs.map(d => d.data() as UsuarioSistema);
+    }
+    notify();
+  }, (err) => console.error('Erro Firestore usuarios:', err));
+
+  // Realtime listener em 'auditoria'
+  onSnapshot(collection(db, 'auditoria'), (snapshot) => {
+    cachedAuditoria = snapshot.docs.map(d => d.data() as RegistroAuditoria);
+    notify();
+  }, (err) => console.error('Erro Firestore auditoria:', err));
 }
 
-// API DE DADOS
-
-// Config
+// Configuração do Sistema
 export function getConfig(): ConfigSistema {
-  return getItem<ConfigSistema>(STORAGE_KEYS.CONFIG, DEFAULT_CONFIG);
+  return cachedConfig;
 }
 
 export function saveConfig(cfg: ConfigSistema): void {
-  setItem(STORAGE_KEYS.CONFIG, cfg);
+  cachedConfig = cfg;
+  setDoc(doc(db, 'config', 'default'), cleanUndefined(cfg)).catch(err => console.error('Erro ao salvar config no Firestore:', err));
+  notify();
 }
 
-// Paróquias, Comunidades, Catequistas
+// Paróquias, Comunidades e Catequistas
 export function getParoquias(): Paroquia[] {
-  return getItem<Paroquia[]>(STORAGE_KEYS.PAROQUIAS, SEED_PAROQUIAS);
+  return cachedParoquias;
 }
 
 export function saveParoquia(paroquia: Paroquia): void {
-  const paroquias = getParoquias();
-  const index = paroquias.findIndex(p => p.id === paroquia.id);
+  const index = cachedParoquias.findIndex(p => p.id === paroquia.id);
   if (index >= 0) {
-    paroquias[index] = paroquia;
+    cachedParoquias[index] = paroquia;
   } else {
-    paroquias.push(paroquia);
+    cachedParoquias.push(paroquia);
   }
-  setItem(STORAGE_KEYS.PAROQUIAS, paroquias);
+  setDoc(doc(db, 'paroquias', paroquia.id), cleanUndefined(paroquia)).catch(err => console.error('Erro ao salvar paróquia no Firestore:', err));
+  notify();
 }
 
 export function getComunidades(paroquiaId?: string): Comunidade[] {
-  const comunidades = getItem<Comunidade[]>(STORAGE_KEYS.COMUNIDADES, SEED_COMUNIDADES);
   if (paroquiaId) {
-    return comunidades.filter(c => c.paroquiaId === paroquiaId);
+    return cachedComunidades.filter(c => c.paroquiaId === paroquiaId);
   }
-  return comunidades;
+  return cachedComunidades;
 }
 
 export function saveComunidade(comunidade: Comunidade): void {
-  const comunidades = getComunidades();
-  const index = comunidades.findIndex(c => c.id === comunidade.id);
+  const index = cachedComunidades.findIndex(c => c.id === comunidade.id);
   if (index >= 0) {
-    comunidades[index] = comunidade;
+    cachedComunidades[index] = comunidade;
   } else {
-    comunidades.push(comunidade);
+    cachedComunidades.push(comunidade);
   }
-  setItem(STORAGE_KEYS.COMUNIDADES, comunidades);
+  setDoc(doc(db, 'comunidades', comunidade.id), cleanUndefined(comunidade)).catch(err => console.error('Erro ao salvar comunidade no Firestore:', err));
+  notify();
 }
 
 export function getCatequistas(paroquiaId?: string): Catequista[] {
-  const list = getItem<Catequista[]>(STORAGE_KEYS.CATEQUISTAS, SEED_CATEQUISTAS);
-  const filtered = paroquiaId ? list.filter(c => c.paroquiaId === paroquiaId) : list;
+  const filtered = paroquiaId ? cachedCatequistas.filter(c => c.paroquiaId === paroquiaId) : cachedCatequistas;
   return filtered.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 }
 
 export function saveCatequista(catequista: Catequista): void {
-  const list = getItem<Catequista[]>(STORAGE_KEYS.CATEQUISTAS, SEED_CATEQUISTAS);
-  const idx = list.findIndex(c => c.id === catequista.id);
+  const idx = cachedCatequistas.findIndex(c => c.id === catequista.id);
   if (idx >= 0) {
-    list[idx] = catequista;
+    cachedCatequistas[idx] = catequista;
   } else {
-    list.push(catequista);
+    cachedCatequistas.push(catequista);
   }
-  setItem(STORAGE_KEYS.CATEQUISTAS, list);
+  setDoc(doc(db, 'catequistas', catequista.id), cleanUndefined(catequista)).catch(err => console.error('Erro ao salvar catequista no Firestore:', err));
+  notify();
+}
+
+export function deleteCatequista(catequistaId: string): void {
+  cachedCatequistas = cachedCatequistas.filter(c => c.id !== catequistaId);
+  deleteDoc(doc(db, 'catequistas', catequistaId)).catch(err => console.error('Erro ao excluir catequista do Firestore:', err));
+
+  // Desvincular das turmas
+  cachedTurmas.forEach(t => {
+    if (t.catequistaId === catequistaId) {
+      delete t.catequistaId;
+      t.catequistaNome = t.catequistaSecundarioNome || 'A definir';
+      delete t.catequistaSecundarioId;
+      delete t.catequistaSecundarioNome;
+      setDoc(doc(db, 'turmas', t.id), cleanUndefined(t));
+    } else if (t.catequistaSecundarioId === catequistaId) {
+      delete t.catequistaSecundarioId;
+      delete t.catequistaSecundarioNome;
+      setDoc(doc(db, 'turmas', t.id), cleanUndefined(t));
+    }
+  });
+  notify();
 }
 
 // Turmas
 export function getTurmas(paroquiaId?: string): Turma[] {
-  const turmas = getItem<Turma[]>(STORAGE_KEYS.TURMAS, SEED_TURMAS);
   const inscritos = getInscritos();
-
-  // Recalcular ocupação real baseada estritamente nos inscritos alocados
-  const turmasAtualizadas = turmas.map(t => {
+  const turmasAtualizadas = cachedTurmas.map(t => {
     const ocupacaoReal = inscritos.filter(i => i.turmaId === t.id).length;
     const listaEspera = Math.max(0, ocupacaoReal - (t.vagasMaximas || 20));
     return {
@@ -635,65 +639,34 @@ export function getTurmas(paroquiaId?: string): Turma[] {
 }
 
 export function saveTurma(turma: Turma): void {
-  const turmas = getItem<Turma[]>(STORAGE_KEYS.TURMAS, SEED_TURMAS);
-  const idx = turmas.findIndex(t => t.id === turma.id);
+  const idx = cachedTurmas.findIndex(t => t.id === turma.id);
   if (idx >= 0) {
-    turmas[idx] = turma;
+    cachedTurmas[idx] = turma;
   } else {
-    turmas.push(turma);
+    cachedTurmas.push(turma);
   }
-  setItem(STORAGE_KEYS.TURMAS, turmas);
+  setDoc(doc(db, 'turmas', turma.id), cleanUndefined(turma)).catch(err => console.error('Erro ao salvar turma no Firestore:', err));
+  notify();
 }
 
 export function deleteTurma(turmaId: string): void {
-  const turmas = getItem<Turma[]>(STORAGE_KEYS.TURMAS, SEED_TURMAS);
-  const novasturmas = turmas.filter(t => t.id !== turmaId);
-  setItem(STORAGE_KEYS.TURMAS, novasturmas);
+  cachedTurmas = cachedTurmas.filter(t => t.id !== turmaId);
+  deleteDoc(doc(db, 'turmas', turmaId)).catch(err => console.error('Erro ao excluir turma do Firestore:', err));
 
   // Desvincular inscritos da turma excluída
-  const list = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  let modificado = false;
-  list.forEach(i => {
+  cachedInscritos.forEach(i => {
     if (i.turmaId === turmaId) {
       delete i.turmaId;
       i.status = 'Matriculada';
-      modificado = true;
+      setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i));
     }
   });
-  if (modificado) {
-    setItem(STORAGE_KEYS.INSCRITOS, list);
-  }
-}
-
-export function deleteCatequista(catequistaId: string): void {
-  const list = getItem<Catequista[]>(STORAGE_KEYS.CATEQUISTAS, SEED_CATEQUISTAS);
-  const novaLista = list.filter(c => c.id !== catequistaId);
-  setItem(STORAGE_KEYS.CATEQUISTAS, novaLista);
-
-  // Desvincular das turmas
-  const turmas = getItem<Turma[]>(STORAGE_KEYS.TURMAS, SEED_TURMAS);
-  let alterado = false;
-  turmas.forEach(t => {
-    if (t.catequistaId === catequistaId) {
-      delete t.catequistaId;
-      t.catequistaNome = t.catequistaSecundarioNome || 'A definir';
-      delete t.catequistaSecundarioId;
-      delete t.catequistaSecundarioNome;
-      alterado = true;
-    } else if (t.catequistaSecundarioId === catequistaId) {
-      delete t.catequistaSecundarioId;
-      delete t.catequistaSecundarioNome;
-      alterado = true;
-    }
-  });
-  if (alterado) {
-    setItem(STORAGE_KEYS.TURMAS, turmas);
-  }
+  notify();
 }
 
 // Responsáveis
 export function getResponsaveis(): Responsavel[] {
-  return getItem<Responsavel[]>(STORAGE_KEYS.RESPONSAVEIS, SEED_RESPONSAVEIS).filter(r => !r.deleted);
+  return cachedResponsaveis.filter(r => !r.deleted);
 }
 
 export function getResponsavelPorCPF(cpf: string): Responsavel | undefined {
@@ -704,7 +677,7 @@ export function getResponsavelPorCPF(cpf: string): Responsavel | undefined {
 }
 
 export function saveResponsavel(resp: Responsavel): Responsavel {
-  const list = getItem<Responsavel[]>(STORAGE_KEYS.RESPONSAVEIS, SEED_RESPONSAVEIS);
+  const list = cachedResponsaveis;
   const cleanCPF = resp.cpf ? resp.cpf.replace(/\D/g, '') : '';
   const cleanNome = resp.nome ? resp.nome.trim().toLowerCase() : '';
   const cleanTel = resp.telefone ? resp.telefone.replace(/\D/g, '') : '';
@@ -755,12 +728,10 @@ export function saveResponsavel(resp: Responsavel): Responsavel {
     list.push(finalResp);
   }
 
-  setItem(STORAGE_KEYS.RESPONSAVEIS, list);
+  setDoc(doc(db, 'responsaveis', finalResp.id), cleanUndefined(finalResp)).catch(err => console.error('Erro ao salvar responsável no Firestore:', err));
 
-  // Sincronizar alterações de dados com inscritos vinculados
-  const inscritos = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  let inscritosAlterados = false;
-  inscritos.forEach(i => {
+  // Sincronizar alterações com inscritos vinculados
+  cachedInscritos.forEach(i => {
     if (
       i.responsavelId === finalResp.id ||
       (cleanCPF && i.responsavel && i.responsavel.cpf && i.responsavel.cpf.replace(/\D/g, '') === cleanCPF) ||
@@ -768,62 +739,58 @@ export function saveResponsavel(resp: Responsavel): Responsavel {
     ) {
       i.responsavel = finalResp;
       i.responsavelId = finalResp.id;
-      inscritosAlterados = true;
+      setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i));
     }
   });
 
-  if (inscritosAlterados) {
-    setItem(STORAGE_KEYS.INSCRITOS, inscritos);
-  }
-
+  notify();
   return finalResp;
 }
 
 export function deleteResponsavel(id: string): void {
-  const list = getItem<Responsavel[]>(STORAGE_KEYS.RESPONSAVEIS, SEED_RESPONSAVEIS);
-  const idx = list.findIndex(r => r.id === id);
+  const idx = cachedResponsaveis.findIndex(r => r.id === id);
   if (idx >= 0) {
-    list[idx].deleted = true;
-    setItem(STORAGE_KEYS.RESPONSAVEIS, list);
+    cachedResponsaveis[idx].deleted = true;
+    setDoc(doc(db, 'responsaveis', id), cleanUndefined(cachedResponsaveis[idx]));
   }
 
   // Desvincular das inscrições
-  const inscritos = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  let modificado = false;
-  inscritos.forEach(i => {
+  cachedInscritos.forEach(i => {
     if (i.responsavelId === id) {
       delete i.responsavelId;
       delete i.responsavel;
-      modificado = true;
+      setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i));
     }
   });
-  if (modificado) {
-    setItem(STORAGE_KEYS.INSCRITOS, inscritos);
-  }
+
+  notify();
 }
 
-// Inscritos
+// Inscrições
 export function getInscritos(): Inscrito[] {
-  const items = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  let hasChanges = false;
-  const migrated = items.map(i => {
-    if ((i.estadoCivil as any) === 'Outro') {
-      hasChanges = true;
-      return { ...i, estadoCivil: 'Outro (divorciado(a), 2ª união, ...)' as const };
-    }
-    return i;
-  });
-
-  if (hasChanges) {
-    setItem(STORAGE_KEYS.INSCRITOS, migrated);
-  }
-
-  return migrated.filter(i => !i.deleted);
+  return cachedInscritos.filter(i => !i.deleted);
 }
 
 export function getInscritoPorProtocolo(protocoloOuId: string): Inscrito | undefined {
   const cleanKey = protocoloOuId.trim().toUpperCase();
   return getInscritos().find(i => i.protocolo.toUpperCase() === cleanKey || i.id === protocoloOuId);
+}
+
+export async function getInscritoPorProtocoloAsync(protocoloOuId: string): Promise<Inscrito | undefined> {
+  const local = getInscritoPorProtocolo(protocoloOuId);
+  if (local) return local;
+
+  const cleanKey = protocoloOuId.trim().toUpperCase();
+  try {
+    const q = query(collection(db, 'inscritos'), where('protocolo', '==', cleanKey));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs[0].data() as Inscrito;
+    }
+  } catch (err) {
+    console.error('Erro ao consultar protocolo no Firestore:', err);
+  }
+  return undefined;
 }
 
 /**
@@ -842,14 +809,28 @@ export function validarComprovantePublico(protocoloOuId: string): PublicComprova
   };
 }
 
+export async function validarComprovantePublicoAsync(protocoloOuId: string): Promise<PublicComprovanteDTO | null> {
+  const local = validarComprovantePublico(protocoloOuId);
+  if (local) return local;
+
+  const ins = await getInscritoPorProtocoloAsync(protocoloOuId);
+  if (!ins) return null;
+  return {
+    nome: ins.nome,
+    protocolo: ins.protocolo,
+    status: ins.status,
+    dataInscricao: ins.dataInscricao
+  };
+}
+
 /**
  * Gerador do Número Automático de Matrícula/Protocolo: AAAA-MODALIDADE-000001
  */
 export function gerarProximoProtocolo(modalidade: ModalidadeCatequese, ano: number = 2028): string {
-  const inscritos = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
+  const list = cachedInscritos;
   const prefixo = `${ano}-${modalidade}-`;
   
-  const numeros = inscritos
+  const numeros = list
     .map(i => i.protocolo)
     .filter(p => p && p.startsWith(prefixo))
     .map(p => {
@@ -869,9 +850,8 @@ export function salvarInscrito(
   data: Partial<Inscrito>,
   usuarioAtual: { uid: string; nome: string; perfil: any } = { uid: 'usr-public', nome: 'Auto-Inscrição Online', perfil: 'Secretaria' }
 ): Inscrito {
-  const list = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
+  const list = cachedInscritos;
 
-  // Validação de duplicidade: não permitir dois inscritos com mesmo nome e mesma data de nascimento
   const nomeNorm = (data.nome || '').trim().toLowerCase();
   const dataNasc = data.dataNascimento;
 
@@ -899,7 +879,6 @@ export function salvarInscrito(
     }
     const old = list[existingIdx];
 
-    // Registrar histórico de alteração
     const auditoriaNova: RegistroAuditoria = {
       id: `aud-${Date.now()}`,
       inscritoId: old.id,
@@ -1009,24 +988,24 @@ export function salvarInscrito(
     list.push(finalInscrito);
   }
 
-  // Recalcular vagas das turmas se vinculou a uma turma
+  // Persistir no Firestore
+  setDoc(doc(db, 'inscritos', finalInscrito.id), cleanUndefined(finalInscrito)).catch(err => console.error('Erro ao salvar inscrito no Firestore:', err));
+
   if (finalInscrito.turmaId) {
     recalcularVagasTurma(finalInscrito.turmaId);
   }
 
-  setItem(STORAGE_KEYS.INSCRITOS, list);
+  notify();
   return finalInscrito;
 }
 
-// Exclusão Lógica e Definitiva
 export function excluirInscritoLógico(
   id: string,
   usuarioAtual: { uid: string; nome: string; perfil: any }
 ): void {
-  const list = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  const idx = list.findIndex(i => i.id === id);
+  const idx = cachedInscritos.findIndex(i => i.id === id);
   if (idx >= 0) {
-    const target = list[idx];
+    const target = cachedInscritos[idx];
     target.deleted = true;
     if (!target.historicoAuditoria) {
       target.historicoAuditoria = [];
@@ -1043,26 +1022,27 @@ export function excluirInscritoLógico(
       valorNovo: 'Excluído',
       descricao: 'Registro de inscrito excluído do sistema'
     });
-    list[idx] = target;
+    cachedInscritos[idx] = target;
+    setDoc(doc(db, 'inscritos', id), cleanUndefined(target)).catch(err => console.error('Erro ao excluir lógico no Firestore:', err));
+
     if (target.turmaId) {
       recalcularVagasTurma(target.turmaId);
     }
-    setItem(STORAGE_KEYS.INSCRITOS, list);
+    notify();
   }
 }
 
 export function registrarAuditoriaStandalone(log: RegistroAuditoria): void {
-  const standalone = getItem<RegistroAuditoria[]>(STORAGE_KEYS.AUDITORIA, []);
-  standalone.unshift(log);
-  setItem(STORAGE_KEYS.AUDITORIA, standalone);
+  cachedAuditoria.unshift(log);
+  setDoc(doc(db, 'auditoria', log.id), cleanUndefined(log)).catch(err => console.error('Erro ao salvar auditoria no Firestore:', err));
+  notify();
 }
 
 export function excluirInscritoDefinitivo(
   id: string,
   usuarioAtual?: { uid: string; nome: string; perfil: any }
 ): void {
-  const list = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  const target = list.find(i => i.id === id);
+  const target = cachedInscritos.find(i => i.id === id);
   if (target) {
     if (usuarioAtual) {
       registrarAuditoriaStandalone({
@@ -1078,69 +1058,57 @@ export function excluirInscritoDefinitivo(
         descricao: `Inscrição de ${target.nome} (Protocolo: ${target.protocolo}) foi excluída permanentemente do sistema.`
       });
     }
-    const novaLista = list.filter(i => i.id !== id);
-    setItem(STORAGE_KEYS.INSCRITOS, novaLista);
+    cachedInscritos = cachedInscritos.filter(i => i.id !== id);
+    deleteDoc(doc(db, 'inscritos', id)).catch(err => console.error('Erro ao excluir definitivo no Firestore:', err));
+
     if (target.turmaId) {
       recalcularVagasTurma(target.turmaId);
     }
+    notify();
   }
 }
 
-// Função para Recalcular Vagas da Turma
 export function recalcularVagasTurma(turmaId: string): void {
-  const turmas = getTurmas();
+  const turmas = cachedTurmas;
   const idx = turmas.findIndex(t => t.id === turmaId);
   if (idx >= 0) {
     const inscritos = getInscritos().filter(i => i.turmaId === turmaId);
     const turma = turmas[idx];
     turma.vagasOcupadas = inscritos.length;
-    
-    if (turma.vagasOcupadas > turma.vagasMaximas) {
-      turma.listaEsperaCount = turma.vagasOcupadas - turma.vagasMaximas;
-    } else {
-      turma.listaEsperaCount = 0;
-    }
+    turma.listaEsperaCount = Math.max(0, turma.vagasOcupadas - (turma.vagasMaximas || 20));
     turmas[idx] = turma;
-    setItem(STORAGE_KEYS.TURMAS, turmas);
+    setDoc(doc(db, 'turmas', turmaId), cleanUndefined(turma)).catch(err => console.error('Erro ao recalcular turma no Firestore:', err));
   }
 }
 
-// Audit Trail Global
 export function limparAuditoria(): void {
-  setItem(STORAGE_KEYS.AUDITORIA, []);
-  const list = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  list.forEach(i => {
+  cachedAuditoria.forEach(a => deleteDoc(doc(db, 'auditoria', a.id)));
+  cachedAuditoria = [];
+
+  cachedInscritos.forEach(i => {
     i.historicoAuditoria = [];
+    setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i));
   });
-  setItem(STORAGE_KEYS.INSCRITOS, list);
+  notify();
 }
 
 export function deleteRegistroAuditoria(audId: string): void {
-  // Remover de standalone AUDITORIA
-  const standalone = getItem<RegistroAuditoria[]>(STORAGE_KEYS.AUDITORIA, []);
-  const novaStandalone = standalone.filter(a => a.id !== audId);
-  setItem(STORAGE_KEYS.AUDITORIA, novaStandalone);
+  cachedAuditoria = cachedAuditoria.filter(a => a.id !== audId);
+  deleteDoc(doc(db, 'auditoria', audId)).catch(err => console.error('Erro ao excluir auditoria do Firestore:', err));
 
-  // Remover de inscritos
-  const inscritos = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  let alterado = false;
-  inscritos.forEach(i => {
+  cachedInscritos.forEach(i => {
     if (i.historicoAuditoria && i.historicoAuditoria.some(a => a.id === audId)) {
       i.historicoAuditoria = i.historicoAuditoria.filter(a => a.id !== audId);
-      alterado = true;
+      setDoc(doc(db, 'inscritos', i.id), cleanUndefined(i));
     }
   });
-  if (alterado) {
-    setItem(STORAGE_KEYS.INSCRITOS, inscritos);
-  }
+  notify();
 }
 
 export function getAuditoriaGlobal(): RegistroAuditoria[] {
-  const standalone = getItem<RegistroAuditoria[]>(STORAGE_KEYS.AUDITORIA, []);
-  const inscritos = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
-  const allLogs: RegistroAuditoria[] = [...standalone];
+  const allLogs: RegistroAuditoria[] = [...cachedAuditoria];
 
-  inscritos.forEach(i => {
+  cachedInscritos.forEach(i => {
     if (i.historicoAuditoria) {
       allLogs.push(...i.historicoAuditoria);
     }
@@ -1149,29 +1117,28 @@ export function getAuditoriaGlobal(): RegistroAuditoria[] {
   return allLogs.sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
 }
 
-// Usuários do Sistema
 export function getUsuariosSistema(): UsuarioSistema[] {
-  return getItem<UsuarioSistema[]>(STORAGE_KEYS.USUARIOS, SEED_USUARIOS);
+  return cachedUsuarios;
 }
 
 export function saveUsuarioSistema(usr: UsuarioSistema): UsuarioSistema {
-  const list = getItem<UsuarioSistema[]>(STORAGE_KEYS.USUARIOS, SEED_USUARIOS);
   const finalUsr = {
     ...usr,
     uid: usr.uid || `usr-${Date.now()}`
   };
-  const idx = list.findIndex(u => u.uid === finalUsr.uid);
+  const idx = cachedUsuarios.findIndex(u => u.uid === finalUsr.uid);
   if (idx >= 0) {
-    list[idx] = finalUsr;
+    cachedUsuarios[idx] = finalUsr;
   } else {
-    list.push(finalUsr);
+    cachedUsuarios.push(finalUsr);
   }
-  setItem(STORAGE_KEYS.USUARIOS, list);
+  setDoc(doc(db, 'usuarios', finalUsr.uid), cleanUndefined(finalUsr)).catch(err => console.error('Erro ao salvar usuário no Firestore:', err));
+  notify();
   return finalUsr;
 }
 
 export function deleteUsuarioSistema(uid: string): void {
-  const list = getItem<UsuarioSistema[]>(STORAGE_KEYS.USUARIOS, SEED_USUARIOS);
-  const novaLista = list.filter(u => u.uid !== uid);
-  setItem(STORAGE_KEYS.USUARIOS, novaLista);
+  cachedUsuarios = cachedUsuarios.filter(u => u.uid !== uid);
+  deleteDoc(doc(db, 'usuarios', uid)).catch(err => console.error('Erro ao excluir usuário no Firestore:', err));
+  notify();
 }

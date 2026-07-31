@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { QrCode, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
 import { PublicComprovanteDTO } from '../types';
-import { validarComprovantePublico } from '../services/storage';
+import { validarComprovantePublico, validarComprovantePublicoAsync } from '../services/storage';
 import { formatarDataBR } from '../services/config';
 
 export const ValidarQRCode: React.FC = () => {
   const [protocolo, setProtocolo] = useState('');
   const [dadosValidos, setDadosValidos] = useState<PublicComprovanteDTO | null>(null);
   const [verificado, setVerificado] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
   // Ler query param se vier por URL (#validar?protocolo=2028-EUC-000001)
   useEffect(() => {
@@ -22,10 +23,18 @@ export const ValidarQRCode: React.FC = () => {
     }
   }, []);
 
-  const validar = (protKey: string) => {
+  const validar = async (protKey: string) => {
+    setCarregando(true);
     setVerificado(true);
-    const dto = validarComprovantePublico(protKey);
-    setDadosValidos(dto);
+    const syncDto = validarComprovantePublico(protKey);
+    if (syncDto) {
+      setDadosValidos(syncDto);
+      setCarregando(false);
+      return;
+    }
+    const asyncDto = await validarComprovantePublicoAsync(protKey);
+    setDadosValidos(asyncDto);
+    setCarregando(false);
   };
 
   const handleValidarSubmit = (e: React.FormEvent) => {
