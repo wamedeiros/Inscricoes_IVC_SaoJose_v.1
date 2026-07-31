@@ -450,9 +450,6 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                     <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                     <div>
                       <p>{resultadoCalculo.mensagem}</p>
-                      <p className="text-[11px] font-normal text-red-700 mt-1">
-                        Crianças menores de 5 anos completos até 31/03/2028 não possuem idade suficiente para o ciclo de Pré-Catequese.
-                      </p>
                     </div>
                   </div>
                 )
