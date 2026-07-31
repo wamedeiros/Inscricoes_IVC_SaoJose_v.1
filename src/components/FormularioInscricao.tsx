@@ -313,7 +313,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
             Protocolo Gerado: <span className="text-[#8C7851]">{inscritoConcluido.protocolo}</span>
           </h2>
           <p className="text-sm text-[#5D574F] mt-1">
-            Guarde este número para consultar o status ou apresentar na Secretaria da Paróquia.
+            Guarde este protocolo para validar o comprovante ou apresentar na Secretaria da Paróquia.
           </p>
         </div>
 

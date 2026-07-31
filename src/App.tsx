@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { LoginModal } from './components/LoginModal';
 import { FormularioInscricao } from './components/FormularioInscricao';
-import { ConsultaInscricao } from './components/ConsultaInscricao';
 import { ValidarQRCode } from './components/ValidarQRCode';
 import { AdminDashboard } from './components/AdminDashboard';
 import { InscritosManager } from './components/InscritosManager';
@@ -96,10 +95,6 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'consulta' && (
-          <ConsultaInscricao />
-        )}
-
         {activeTab === 'validar' && (
           <ValidarQRCode />
         )}
@@ -123,7 +118,7 @@ export default function App() {
               </div>
               <h3 className="text-lg font-bold text-[#2D2A26]">Acesso Restrito ao Coordenador</h3>
               <p className="text-xs text-[#5D574F] leading-relaxed">
-                Esta área é reservada para a Coordenação e Secretaria da Catequese. Para realizar a sua própria inscrição ou consultar o seu protocolo, utilize os botões da barra superior.
+                Esta área é reservada para a Coordenação e Secretaria da Catequese. Para realizar uma nova inscrição ou validar um comprovante, utilize os botões da barra superior.
               </p>
               <button
                 onClick={() => setIsLoginModalOpen(true)}

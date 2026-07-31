@@ -8,7 +8,6 @@ import {
   FileSpreadsheet,
   History,
   Settings,
-  Search,
   QrCode,
   Lock,
   LogOut,
@@ -126,18 +125,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <UserPlus className="w-4 h-4" />
             Nova Inscrição
-          </button>
-
-          <button
-            onClick={() => setActiveTab('consulta')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'consulta'
-                ? 'bg-[#8C7851] text-white shadow-md shadow-[#8C7851]/20 font-bold'
-                : 'bg-[#F3F1ED] text-[#4A443F] hover:bg-[#E5E1DA]'
-            }`}
-          >
-            <Search className="w-4 h-4" />
-            Consultar Protocolo
           </button>
 
           <button

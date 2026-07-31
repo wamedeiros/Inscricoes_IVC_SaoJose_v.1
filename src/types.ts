@@ -26,6 +26,13 @@ export type StatusInscricao =
   | 'Matriculada'
   | 'Turma definida';
 
+export interface PublicComprovanteDTO {
+  nome: string;
+  protocolo: string;
+  status: StatusInscricao;
+  dataInscricao: string;
+}
+
 export type PerfilUsuario =
   | 'Administrador'
   | 'Secretaria'

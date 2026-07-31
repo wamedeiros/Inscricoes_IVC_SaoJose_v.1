@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, CheckCircle2, ShieldAlert, UserCheck, ArrowRight, Printer } from 'lucide-react';
-import { Inscrito, MODALIDADE_NAMES } from '../types';
-import { getInscritoPorProtocolo } from '../services/storage';
-import { formatarDataBR, formatarTelefone } from '../services/config';
-import { gerarComprovanteInscricaoPDF } from '../services/pdfGenerator';
+import { QrCode, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
+import { PublicComprovanteDTO } from '../types';
+import { validarComprovantePublico } from '../services/storage';
+import { formatarDataBR } from '../services/config';
 
 export const ValidarQRCode: React.FC = () => {
   const [protocolo, setProtocolo] = useState('');
-  const [inscritoValido, setInscritoValido] = useState<Inscrito | null>(null);
+  const [dadosValidos, setDadosValidos] = useState<PublicComprovanteDTO | null>(null);
   const [verificado, setVerificado] = useState(false);
 
   // Ler query param se vier por URL (#validar?protocolo=2028-EUC-000001)
@@ -25,8 +24,8 @@ export const ValidarQRCode: React.FC = () => {
 
   const validar = (protKey: string) => {
     setVerificado(true);
-    const ins = getInscritoPorProtocolo(protKey);
-    setInscritoValido(ins || null);
+    const dto = validarComprovantePublico(protKey);
+    setDadosValidos(dto);
   };
 
   const handleValidarSubmit = (e: React.FormEvent) => {
@@ -42,13 +41,13 @@ export const ValidarQRCode: React.FC = () => {
         <div className="w-14 h-14 bg-[#F3F1ED] text-[#8C7851] rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner border border-[#E5E1DA]">
           <QrCode className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-extrabold text-[#2D2A26]">Validação Autêntica de QR Code</h2>
-        <p className="text-xs text-[#5D574F] max-w-md mx-auto">
-          Insira o código do protocolo escaneado do comprovante para verificar instantaneamente a autenticidade do cadastro na Arquidiocese de Teresina.
+        <h2 className="text-2xl font-extrabold text-[#2D2A26]">Validar Comprovante de Inscrição</h2>
+        <p className="text-xs text-[#5D574F] max-w-md mx-auto leading-relaxed">
+          Informe o código do protocolo impresso no comprovante para verificar a autenticidade e consultar a situação atual da inscrição.
         </p>
       </div>
 
-      <form onSubmit={handleValidarSubmit} className="flex gap-2">
+      <form onSubmit={handleValidarSubmit} className="flex gap-2 max-w-md mx-auto">
         <input
           type="text"
           required
@@ -67,61 +66,43 @@ export const ValidarQRCode: React.FC = () => {
       </form>
 
       {verificado && (
-        inscritoValido ? (
+        dadosValidos ? (
           <div className="p-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-4">
             <div className="flex items-center gap-3 text-emerald-800 font-extrabold text-base border-b border-emerald-200 pb-3">
               <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-              <span>Inscrição Autêntica & Cadastrada</span>
+              <span>Comprovante Autêntico & Válido</span>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3 text-xs text-[#4A443F]">
-              <div>
-                <span className="text-[#A69F95] font-medium">Catequizando:</span>
-                <p className="font-extrabold text-[#2D2A26]">{inscritoValido.nome}</p>
+            <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#4A443F]">
+              <div className="p-3 bg-white/80 rounded-xl border border-emerald-100">
+                <span className="text-[#A69F95] font-semibold text-[11px] block">Nome do Catequizando</span>
+                <p className="font-extrabold text-[#2D2A26] text-sm mt-0.5">{dadosValidos.nome}</p>
               </div>
 
-              <div>
-                <span className="text-[#A69F95] font-medium">Protocolo / Matrícula:</span>
-                <p className="font-mono font-bold text-[#8C7851]">{inscritoValido.protocolo}</p>
+              <div className="p-3 bg-white/80 rounded-xl border border-emerald-100">
+                <span className="text-[#A69F95] font-semibold text-[11px] block">Número do Protocolo</span>
+                <p className="font-mono font-bold text-[#8C7851] text-sm mt-0.5">{dadosValidos.protocolo}</p>
               </div>
 
-              <div>
-                <span className="text-[#A69F95] font-medium">Modalidade:</span>
-                <p className="font-bold text-[#2D2A26]">{MODALIDADE_NAMES[inscritoValido.modalidade]}</p>
+              <div className="p-3 bg-white/80 rounded-xl border border-emerald-100">
+                <span className="text-[#A69F95] font-semibold text-[11px] block">Situação da Inscrição</span>
+                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {dadosValidos.status}
+                </span>
               </div>
 
-              <div>
-                <span className="text-[#A69F95] font-medium">Status da Matrícula:</span>
-                <p className="font-bold text-emerald-800">{inscritoValido.status}</p>
+              <div className="p-3 bg-white/80 rounded-xl border border-emerald-100">
+                <span className="text-[#A69F95] font-semibold text-[11px] block">Data da Inscrição</span>
+                <p className="font-bold text-[#2D2A26] text-sm mt-0.5">{formatarDataBR(dadosValidos.dataInscricao)}</p>
               </div>
-
-              <div>
-                <span className="text-[#A69F95] font-medium">Data da Inscrição:</span>
-                <p>{formatarDataBR(inscritoValido.dataInscricao)}</p>
-              </div>
-
-              <div>
-                <span className="text-[#A69F95] font-medium">Contato Responsável:</span>
-                <p>{formatarTelefone(inscritoValido.telefone)}</p>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => gerarComprovanteInscricaoPDF(inscritoValido)}
-                className="px-4 py-2 bg-[#8C7851] hover:bg-[#7A6946] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow"
-              >
-                <Printer className="w-4 h-4" />
-                Imprimir Ficha Oficial
-              </button>
             </div>
           </div>
         ) : (
           <div className="p-6 bg-[#FAF9F7] border-2 border-[#E5E1DA] rounded-2xl text-center space-y-2">
             <ShieldAlert className="w-10 h-10 text-amber-700 mx-auto" />
-            <h3 className="font-bold text-[#2D2A26] text-base">Inscrição Não Localizada</h3>
+            <h3 className="font-bold text-[#2D2A26] text-base">Comprovante Não Localizado</h3>
             <p className="text-xs text-[#5D574F]">
-              O código de protocolo <span className="font-mono font-bold">{protocolo}</span> não pertence a nenhum registro ativo no banco de dados oficial.
+              O número de protocolo <span className="font-mono font-bold text-[#2D2A26]">{protocolo}</span> não pertence a nenhum comprovante ativo cadastrado no sistema.
             </p>
           </div>
         )

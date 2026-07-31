@@ -9,7 +9,8 @@ import {
   UsuarioSistema,
   RegistroAuditoria,
   StatusInscricao,
-  ModalidadeCatequese
+  ModalidadeCatequese,
+  PublicComprovanteDTO
 } from '../types';
 import { DEFAULT_CONFIG } from './config';
 
@@ -823,6 +824,22 @@ export function getInscritos(): Inscrito[] {
 export function getInscritoPorProtocolo(protocoloOuId: string): Inscrito | undefined {
   const cleanKey = protocoloOuId.trim().toUpperCase();
   return getInscritos().find(i => i.protocolo.toUpperCase() === cleanKey || i.id === protocoloOuId);
+}
+
+/**
+ * Consulta Pública de Validação do Comprovante (DTO restrito com LGPD)
+ * Retorna exclusivamente: Nome, Protocolo, Status e Data da Inscrição.
+ */
+export function validarComprovantePublico(protocoloOuId: string): PublicComprovanteDTO | null {
+  const cleanKey = protocoloOuId.trim().toUpperCase();
+  const inscrito = getInscritos().find(i => i.protocolo.toUpperCase() === cleanKey || i.id === protocoloOuId);
+  if (!inscrito) return null;
+  return {
+    nome: inscrito.nome,
+    protocolo: inscrito.protocolo,
+    status: inscrito.status,
+    dataInscricao: inscrito.dataInscricao
+  };
 }
 
 /**
