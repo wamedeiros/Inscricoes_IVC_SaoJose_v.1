@@ -81,7 +81,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
   const [crisma, setCrisma] = useState(false);
 
   // Campos específicos de Adulto
-  const [estadoCivil, setEstadoCivil] = useState<'Solteiro(a)' | 'Casado(a) no Civil' | 'Celebrou Matrimônio Religioso' | 'Outro'>('Solteiro(a)');
+  const [estadoCivil, setEstadoCivil] = useState<'Solteiro(a)' | 'Casado(a) no Civil' | 'Celebrou Matrimônio Religioso' | 'Viúvo(a)' | 'Outro (divorciado(a), 2ª união, ...)'>('Solteiro(a)');
   const [motivacao, setMotivacao] = useState('');
 
   // Necessidades especiais & Pastoral
@@ -704,7 +704,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                     <option value="Casado(a) no Civil">Casado(a) no Civil</option>
                     <option value="Celebrou Matrimônio Religioso">Celebrou Matrimônio Religioso</option>
                     <option value="Viúvo(a)">Viúvo(a)</option>
-                    <option value="Outro">Outro</option>
+                    <option value="Outro (divorciado(a), 2ª união, ...)">Outro (divorciado(a), 2ª união, ...)</option>
                   </select>
                 </div>
 

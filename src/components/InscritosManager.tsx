@@ -547,6 +547,22 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                         className="w-full p-2 border border-[#E5E1DA] rounded-lg bg-white"
                       />
                     </div>
+                    {inscritoSelecionado.modalidade === 'ADU' && (
+                      <div>
+                        <label className="block font-bold mb-1">Estado Civil</label>
+                        <select
+                          value={inscritoSelecionado.estadoCivil === 'Outro' ? 'Outro (divorciado(a), 2ª união, ...)' : (inscritoSelecionado.estadoCivil || 'Solteiro(a)')}
+                          onChange={(e) => setInscritoSelecionado({ ...inscritoSelecionado, estadoCivil: e.target.value as any })}
+                          className="w-full p-2 border border-[#E5E1DA] rounded-lg bg-white"
+                        >
+                          <option value="Solteiro(a)">Solteiro(a)</option>
+                          <option value="Casado(a) no Civil">Casado(a) no Civil</option>
+                          <option value="Celebrou Matrimônio Religioso">Celebrou Matrimônio Religioso</option>
+                          <option value="Viúvo(a)">Viúvo(a)</option>
+                          <option value="Outro (divorciado(a), 2ª união, ...)">Outro (divorciado(a), 2ª união, ...)</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid sm:grid-cols-3 gap-3 pt-2">
@@ -1030,7 +1046,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                   <p><strong>Batizado:</strong> {inscritoSelecionado.batizado ? `Sim - ${inscritoSelecionado.localBatismo}` : 'Não'}</p>
                   <p><strong>Primeira Eucaristia:</strong> {inscritoSelecionado.eucaristia ? 'Sim' : 'Não'}</p>
                   <p><strong>Crisma:</strong> {inscritoSelecionado.crisma ? 'Sim' : 'Não'}</p>
-                  {inscritoSelecionado.estadoCivil && <p><strong>Estado Civil:</strong> {inscritoSelecionado.estadoCivil}</p>}
+                  {inscritoSelecionado.estadoCivil && <p><strong>Estado Civil:</strong> {inscritoSelecionado.estadoCivil === 'Outro' ? 'Outro (divorciado(a), 2ª união, ...)' : inscritoSelecionado.estadoCivil}</p>}
                 </div>
               </div>
 

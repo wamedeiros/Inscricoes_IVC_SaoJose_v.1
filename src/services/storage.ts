@@ -803,7 +803,21 @@ export function deleteResponsavel(id: string): void {
 
 // Inscritos
 export function getInscritos(): Inscrito[] {
-  return getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS).filter(i => !i.deleted);
+  const items = getItem<Inscrito[]>(STORAGE_KEYS.INSCRITOS, SEED_INSCRITOS);
+  let hasChanges = false;
+  const migrated = items.map(i => {
+    if ((i.estadoCivil as any) === 'Outro') {
+      hasChanges = true;
+      return { ...i, estadoCivil: 'Outro (divorciado(a), 2ª união, ...)' as const };
+    }
+    return i;
+  });
+
+  if (hasChanges) {
+    setItem(STORAGE_KEYS.INSCRITOS, migrated);
+  }
+
+  return migrated.filter(i => !i.deleted);
 }
 
 export function getInscritoPorProtocolo(protocoloOuId: string): Inscrito | undefined {
@@ -885,6 +899,7 @@ export function salvarInscrito(
     finalInscrito = {
       ...old,
       ...data,
+      estadoCivil: (data.estadoCivil as any) === 'Outro' ? 'Outro (divorciado(a), 2ª união, ...)' : (data.estadoCivil ?? old.estadoCivil),
       historicoAuditoria: [auditoriaNova, ...(old.historicoAuditoria || [])]
     } as Inscrito;
 
@@ -928,7 +943,7 @@ export function salvarInscrito(
       dataEucaristia: data.dataEucaristia || '',
       crisma: !!data.crisma,
 
-      estadoCivil: data.estadoCivil,
+      estadoCivil: (data.estadoCivil as any) === 'Outro' ? 'Outro (divorciado(a), 2ª união, ...)' : data.estadoCivil,
       motivacao: data.motivacao,
 
       responsavelId: data.responsavelId,

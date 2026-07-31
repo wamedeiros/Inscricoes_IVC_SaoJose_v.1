@@ -31,7 +31,7 @@ export function exportarInscritosExcel(inscritos: Inscrito[], nomeArquivo: strin
     'Cidade': i.cidade || '',
     'Telefone Catequizando': formatarTelefone(i.telefone),
     'E-mail Catequizando': i.email || '',
-    'Estado Civil (Adulto)': i.estadoCivil || '',
+    'Estado Civil (Adulto)': ((i.estadoCivil as any) === 'Outro' ? 'Outro (divorciado(a), 2ª união, ...)' : i.estadoCivil) || '',
     'Motivação da Inscrição (Adulto)': i.motivacao || '',
     'Batizado?': i.batizado ? 'Sim' : 'Não',
     'Batismo (Onde / Quando)': i.localBatismo ? `${i.localBatismo} ${i.dataBatismo ? '(' + formatarDataBR(i.dataBatismo) + ')' : ''}` : '',

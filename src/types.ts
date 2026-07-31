@@ -109,7 +109,7 @@ export interface Inscrito {
   crisma: boolean;
 
   // Campos específicos para Adulto
-  estadoCivil?: 'Solteiro(a)' | 'Casado(a) no Civil' | 'Celebrou Matrimônio Religioso' | 'Viúvo(a)' | 'Outro';
+  estadoCivil?: 'Solteiro(a)' | 'Casado(a) no Civil' | 'Celebrou Matrimônio Religioso' | 'Viúvo(a)' | 'Outro (divorciado(a), 2ª união, ...)';
   motivacao?: string;
 
   // Dados dos Responsáveis / Pais (Pai e Mãe são obrigatórios para menores e vêm antes do responsável legal)

@@ -153,8 +153,11 @@ export async function gerarComprovanteInscricaoPDF(inscrito: Inscrito, modo: 'do
     const est = inscrito.estadoCivil;
     drawCheckbox('SOLTEIRO(A)', est === 'Solteiro(a)', 35, y);
     drawCheckbox('CASADO(A) CIVIL', est === 'Casado(a) no Civil', 65, y);
-    drawCheckbox('MATRIMÔNIO RELIGIOSO', est === 'Celebrou Matrimônio Religioso', 105, y);
-    drawCheckbox('OUTRO', est === 'Outro', 155, y);
+    drawCheckbox('MATRIMÔNIO RELIGIOSO', est === 'Celebrou Matrimônio Religioso', 102, y);
+    drawCheckbox('VIÚVO(A)', est === 'Viúvo(a)', 152, y);
+    y += lineGap;
+    const isOutro = est === 'Outro (divorciado(a), 2ª união, ...)' || (est as any) === 'Outro';
+    drawCheckbox('OUTRO (DIVORCIADO(A), 2ª UNIÃO, ...)', isOutro, 35, y);
     y += lineGap;
   }
 
