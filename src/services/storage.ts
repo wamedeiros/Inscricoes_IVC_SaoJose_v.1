@@ -452,7 +452,12 @@ export function initStorage(): void {
   // Realtime listener em 'config'
   onSnapshot(doc(db, 'config', 'default'), (snapshot) => {
     if (snapshot.exists()) {
-      cachedConfig = snapshot.data() as ConfigSistema;
+      const data = snapshot.data() as ConfigSistema;
+      cachedConfig = {
+        ...DEFAULT_CONFIG,
+        ...data,
+        inscricoesAbertas: data.inscricoesAbertas !== undefined ? data.inscricoesAbertas : true
+      };
     } else {
       setDoc(doc(db, 'config', 'default'), cleanUndefined(DEFAULT_CONFIG));
       cachedConfig = DEFAULT_CONFIG;

@@ -1,6 +1,7 @@
 import { ConfigSistema, ModalidadeCatequese, MODALIDADE_NAMES } from '../types';
 
 export const DEFAULT_CONFIG: ConfigSistema = {
+  inscricoesAbertas: true,
   anoPastoralAtual: 2028,
   dataReferencia: '2028-04-30',
   faixasEtarias: {

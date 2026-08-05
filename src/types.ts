@@ -237,6 +237,7 @@ export interface UsuarioSistema {
 }
 
 export interface ConfigSistema {
+  inscricoesAbertas?: boolean;
   anoPastoralAtual: number;
   dataReferencia: string; // Default 2028-03-31
   faixasEtarias: {

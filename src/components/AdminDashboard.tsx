@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import { Inscrito, Turma, Comunidade, MODALIDADE_NAMES, ModalidadeCatequese } from '../types';
 import { getInscritos, getTurmas, getComunidades, subscribeStorage } from '../services/storage';
+import { StatusInscricoesCard } from './StatusInscricoesCard';
 
 const COLORS = ['#8C7851', '#C4A976', '#5D574F', '#2D2A26', '#A69F95', '#D2C7B5'];
 
@@ -100,6 +101,9 @@ export const AdminDashboard: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Card de Controle do Status das Inscrições (Aberto/Fechado) */}
+      <StatusInscricoesCard />
 
       {/* Grid de Cards de Métricas Principais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

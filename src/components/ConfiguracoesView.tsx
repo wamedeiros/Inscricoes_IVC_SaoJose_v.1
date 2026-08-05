@@ -3,6 +3,7 @@ import { Settings, Save, CheckCircle2, Sliders, UserPlus, Users, Edit3, Trash2, 
 import { ConfigSistema, UsuarioSistema } from '../types';
 import { getConfig, saveConfig, getUsuariosSistema, saveUsuarioSistema, deleteUsuarioSistema } from '../services/storage';
 import { ConfirmModal } from './ConfirmModal';
+import { StatusInscricoesCard } from './StatusInscricoesCard';
 
 interface ConfiguracoesViewProps {
   usuarioAtual?: UsuarioSistema;
@@ -103,6 +104,9 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({ usuarioAtu
           Altere os parâmetros de cálculo de idade, faixas etárias, mensagens e cadastre novos logins para a equipe de catequistas.
         </p>
       </div>
+
+      {/* Card de Controle de Abertura/Fechamento das Inscrições */}
+      <StatusInscricoesCard />
 
       {salvo && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-bold flex items-center gap-2">

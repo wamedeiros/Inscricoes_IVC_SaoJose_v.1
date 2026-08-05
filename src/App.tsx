@@ -92,6 +92,7 @@ export default function App() {
         {activeTab === 'inscricao' && (
           <FormularioInscricao
             onSucessoInscricao={() => {}}
+            onOpenLogin={() => setIsLoginModalOpen(true)}
           />
         )}
 

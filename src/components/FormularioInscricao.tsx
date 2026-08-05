@@ -25,7 +25,8 @@ import {
   MODALIDADE_NAMES,
   Paroquia,
   Comunidade,
-  DocumentoAnexo
+  DocumentoAnexo,
+  ConfigSistema
 } from '../types';
 import {
   determinarModalidade,
@@ -39,17 +40,36 @@ import {
   getComunidades,
   getResponsavelPorCPF,
   saveResponsavel,
-  salvarInscrito
+  salvarInscrito,
+  subscribeStorage
 } from '../services/storage';
 import { gerarComprovanteInscricaoPDF } from '../services/pdfGenerator';
+import { InscricoesFechadasView } from './InscricoesFechadasView';
 
 interface FormularioInscricaoProps {
   onSucessoInscricao?: (inscrito: Inscrito) => void;
+  onOpenLogin?: () => void;
 }
 
-export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSucessoInscricao }) => {
-  const config = getConfig();
+export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSucessoInscricao, onOpenLogin }) => {
+  const [config, setConfig] = useState<ConfigSistema>(() => getConfig());
+
+  useEffect(() => {
+    return subscribeStorage(() => {
+      setConfig(getConfig());
+    });
+  }, []);
+
   const paroquias = getParoquias();
+
+  if (config.inscricoesAbertas === false) {
+    return (
+      <InscricoesFechadasView
+        onVoltar={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onOpenLogin={onOpenLogin}
+      />
+    );
+  }
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
 
   // Estados do formulário
