@@ -61,15 +61,6 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
   }, []);
 
   const paroquias = getParoquias();
-
-  if (config.inscricoesAbertas === false) {
-    return (
-      <InscricoesFechadasView
-        onVoltar={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        onOpenLogin={onOpenLogin}
-      />
-    );
-  }
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
 
   // Estados do formulário
@@ -322,6 +313,16 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
       setCarregando(false);
     }
   };
+
+  // Se as inscrições estiverem temporariamente fechadas
+  if (config.inscricoesAbertas === false) {
+    return (
+      <InscricoesFechadasView
+        onVoltar={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onOpenLogin={onOpenLogin}
+      />
+    );
+  }
 
   // Se já concluiu a inscrição com sucesso
   if (inscritoConcluido) {
