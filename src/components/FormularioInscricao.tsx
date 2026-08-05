@@ -126,8 +126,9 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
   // Documentos Anexados (Simulação/Firebase Storage)
   const [documentos, setDocumentos] = useState<DocumentoAnexo[]>([]);
 
-  // LGPD
+  // LGPD e Compromisso com a Caminhada
   const [aceitoLGPD, setAceitoLGPD] = useState(false);
+  const [aceitoCaminhada, setAceitoCaminhada] = useState(false);
 
   // Estado de Sucesso / Conclusão
   const [preferenciasHorario, setPreferenciasHorario] = useState<string[]>([]);
@@ -187,7 +188,12 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
     }
 
     if (!aceitoLGPD) {
-      setErroMsg('É obrigatório aceitar os termos de consentimento da LGPD para enviar a inscrição.');
+      setErroMsg('É obrigatório aceitar o Termo de Consentimento para Tratamento de Dados Pessoais (LGPD) para enviar a inscrição.');
+      return;
+    }
+
+    if (!aceitoCaminhada) {
+      setErroMsg('É obrigatório assumir o compromisso com a caminhada catequética para enviar a inscrição.');
       return;
     }
 
@@ -1065,7 +1071,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
             <div className="space-y-1">
               <p className="font-bold text-amber-900">Aviso Importante — Consulta Prévia de Disponibilidade:</p>
               <p className="text-[11px] leading-relaxed text-amber-800">
-                Trata-se de uma <strong>consulta prévia de disponibilidade</strong>. As turmas só serão formadas após o encerramento do prazo de inscrições, respeitando o <strong>número máximo de 25 pessoas por turma</strong> e a <strong>ordem de inscrição</strong>. Você pode marcar mais de uma disponibilidade de horário.
+                Trata-se de uma <strong>consulta prévia de disponibilidade</strong>. As turmas só serão formadas após o encerramento do prazo de inscrições, respeitando a <strong>capacidade máxima do espaço físico destinado a cada turma</strong> e a <strong>ordem de inscrição</strong>. Você pode marcar mais de uma disponibilidade de horário.
               </p>
             </div>
           </div>
@@ -1130,27 +1136,64 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
           })()}
         </section>
 
-        {/* TERMO DE CONSENTIMENTO LGPD */}
-        <section className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-3 text-xs">
-          <div className="flex items-center gap-2 text-[#8C7851] font-bold">
-            <ShieldCheck className="w-5 h-5 text-[#C4A976]" />
-            <span>Termo de Consentimento - Proteção de Dados (LGPD)</span>
+        {/* TERMO DE CONSENTIMENTO LGPD E COMPROMISSO COM A CAMINHADA CATEQUÉTICA */}
+        <section className="p-4 sm:p-5 bg-[#FAF9F7] rounded-xl border border-[#E5E1DA] space-y-4 text-xs">
+          {/* 1. TERMO DE CONSENTIMENTO (LGPD) */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-[#8C7851] font-bold text-sm">
+              <ShieldCheck className="w-5 h-5 text-[#C4A976] shrink-0" />
+              <span>Termo de Consentimento - Proteção de Dados (LGPD)</span>
+            </div>
+
+            <p className="text-[#5D574F] text-[11px] leading-relaxed max-h-28 overflow-y-auto pr-1 bg-white p-3 rounded-lg border border-[#E5E1DA]">
+              {config.termoLGPDTexto}
+            </p>
+
+            <label className="flex items-start gap-2.5 font-bold text-[#2D2A26] cursor-pointer pt-1">
+              <input
+                type="checkbox"
+                required
+                checked={aceitoLGPD}
+                onChange={(e) => setAceitoLGPD(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded accent-[#8C7851] shrink-0"
+              />
+              <span className="text-xs leading-snug">
+                Declaro que li e concordo com o Termo de Consentimento para Tratamento de Dados Pessoais (LGPD).
+              </span>
+            </label>
           </div>
 
-          <p className="text-[#5D574F] text-[11px] leading-relaxed max-h-24 overflow-y-auto pr-1">
-            {config.termoLGPDTexto}
-          </p>
+          <div className="border-t border-[#E5E1DA] pt-1"></div>
 
-          <label className="flex items-start gap-2.5 font-bold text-[#2D2A26] cursor-pointer pt-1">
-            <input
-              type="checkbox"
-              required
-              checked={aceitoLGPD}
-              onChange={(e) => setAceitoLGPD(e.target.checked)}
-              className="mt-0.5 rounded accent-[#8C7851]"
-            />
-            <span>Declaro que li e concordo expressamente com os termos de consentimento e política de privacidade.</span>
-          </label>
+          {/* 2. COMPROMISSO COM A CAMINHADA CATEQUÉTICA */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-[#8C7851] font-bold text-sm">
+              <BookOpen className="w-5 h-5 text-[#C4A976] shrink-0" />
+              <span>Compromisso com a Caminhada Catequética</span>
+            </div>
+
+            <div className="text-[#5D574F] text-[11px] leading-relaxed space-y-2 bg-white p-3 rounded-lg border border-[#E5E1DA]">
+              <p>
+                A participação na Catequese de Iniciação à Vida Cristã é um caminho de formação na fé, de convivência comunitária e de preparação para a recepção dos sacramentos. Por isso, comprometo-me a participar dos encontros e das atividades propostas com dedicação e responsabilidade.
+              </p>
+              <p>
+                Estou ciente de que a igreja adota como referência a participação em pelo menos 75% dos encontros, por compreender que essa vivência é essencial para uma preparação sacramental adequada. Caso essa frequência não seja alcançada, poderá ser necessário participar de um novo processo formativo antes da recepção dos sacramentos.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-2.5 font-bold text-[#2D2A26] cursor-pointer pt-1">
+              <input
+                type="checkbox"
+                required
+                checked={aceitoCaminhada}
+                onChange={(e) => setAceitoCaminhada(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded accent-[#8C7851] shrink-0"
+              />
+              <span className="text-xs leading-snug">
+                Declaro que li, compreendi e assumo o compromisso de participar da caminhada catequética, estando ciente da importância da frequência aos encontros para a adequada preparação para a recepção dos sacramentos.
+              </span>
+            </label>
+          </div>
         </section>
 
         {/* BOTÃO SUBMETER */}
