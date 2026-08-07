@@ -449,6 +449,9 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                 />
               </div>
               <p className="text-[11px] text-[#A69F95] mt-1">Data de referência para cálculo: {formatarDataBR(config.dataReferencia)}</p>
+              <p className="text-[11px] text-[#8C7851] mt-1 font-semibold">
+                Atenção: Para realizar a inscrição na Pré-Catequese, a criança deverá ter 2 anos completos até 01/09/2026.
+              </p>
             </div>
 
             {/* Painel do Resultado Automático da Modalidade */}
@@ -1103,7 +1106,8 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
             const isAdulto = resultadoCalculo.modalidade === 'ADU';
             const opcoes = isPre
               ? [
-                  'Domingo – 10:00 às 11:00'
+                  'Domingo (10h00)',
+                  'Sábado (16h00)'
                 ]
               : isAdulto
               ? [
@@ -1113,10 +1117,10 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                   'Quarta-feira (19h00)',
                   'Quinta-feira (19h00)',
                   'Sexta-feira (19h00)',
-                  'Sábado (15h30)'
+                  'Sábado (16h00)'
                 ]
               : [
-                  'Sábado (15h30)',
+                  'Sábado (16h00)',
                   'Domingo (8h30)'
                 ];
 

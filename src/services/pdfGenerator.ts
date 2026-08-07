@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
 import { Inscrito, Turma, MODALIDADE_NAMES } from '../types';
-import { formatarDataBR, formatarTelefone, formatarCPF } from './config';
+import { formatarDataBR, formatarTelefone, formatarCPF, formatarHoraValida, formatarOpcaoHorario } from './config';
 import { getTurmas } from './storage';
 
 /**
@@ -307,7 +307,7 @@ export async function gerarComprovanteInscricaoPDF(inscrito: Inscrito, modo: 'do
   y += lineGap;
 
   if (inscrito.preferenciasHorario && inscrito.preferenciasHorario.length > 0) {
-    drawFieldLine('HORÁRIO(S) PRETENDIDO(S):', inscrito.preferenciasHorario.join(', '), y);
+    drawFieldLine('HORÁRIO(S) PRETENDIDO(S):', inscrito.preferenciasHorario.map(formatarOpcaoHorario).join(', '), y);
     y += lineGap;
   }
 
@@ -317,7 +317,7 @@ export async function gerarComprovanteInscricaoPDF(inscrito: Inscrito, modo: 'do
     const turmas = getTurmas();
     const tObj = turmas.find(t => t.id === inscrito.turmaId);
     if (tObj) {
-      nomeTurmaAlocada = `${tObj.nome} (${tObj.diaSemana} - ${tObj.horario})`;
+      nomeTurmaAlocada = `${tObj.nome} (${tObj.diaSemana} (${formatarHoraValida(tObj.horario)}))`;
     }
   }
   drawFieldLine('TURMA ALOCADA:', nomeTurmaAlocada, y);
@@ -392,7 +392,7 @@ export function gerarListaPresencaPDF(turma: Turma, inscritos: Inscrito[]): void
 
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Catequista(s): ${catTexto} | Horário: ${turma.horario} (${turma.diaSemana}) | Sala: ${turma.sala}`, 15, 25);
+  doc.text(`Catequista(s): ${catTexto} | Horário: ${turma.diaSemana} (${formatarHoraValida(turma.horario)}) | Sala: ${turma.sala}`, 15, 25);
   doc.text(`Ano de Conclusão: ${turma.anoPastoral || 2028} | Total de Alunos Alocados: ${inscritos.length}`, 15, 30);
 
   const tableBody = inscritos.map((ins, idx) => [

@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import { Inscrito, Turma, Responsavel, MODALIDADE_NAMES } from '../types';
-import { formatarDataBR, formatarTelefone, formatarCPF } from './config';
+import { formatarDataBR, formatarTelefone, formatarCPF, formatarOpcaoHorario, formatarHoraValida } from './config';
 
 /**
  * Exporta Lista de Inscritos para planilha Excel (.xlsx)
@@ -62,7 +62,7 @@ export function exportarInscritosExcel(inscritos: Inscrito[], nomeArquivo: strin
     'CPF do Responsável': i.responsavel ? formatarCPF(i.responsavel.cpf) : '',
     'Telefone do Responsável': i.responsavel ? formatarTelefone(i.responsavel.telefone) : '',
     'E-mail do Responsável': i.responsavel ? i.responsavel.email : '',
-    'Preferência de Horários': i.preferenciasHorario ? i.preferenciasHorario.join(' | ') : '',
+    'Preferência de Horários': i.preferenciasHorario ? i.preferenciasHorario.map(formatarOpcaoHorario).join(' | ') : '',
     'Observações': i.observacoes || '',
     'Data da Inscrição': `${formatarDataBR(i.dataInscricao)} ${i.horaInscricao || ''}`
   }));
@@ -82,7 +82,7 @@ export function exportarTurmasExcel(turmas: Turma[], nomeArquivo: string = 'Turm
     'Turma': t.nome,
     'Modalidade': MODALIDADE_NAMES[t.modalidade],
     'Dia Semana': t.diaSemana,
-    'Horário': t.horario,
+    'Horário': formatarHoraValida(t.horario),
     'Sala': t.sala,
     '1º Catequista': t.catequistaNome || 'A definir',
     '2º Catequista': t.catequistaSecundarioNome || 'Nenhum',

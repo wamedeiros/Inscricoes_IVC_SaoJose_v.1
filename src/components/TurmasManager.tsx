@@ -30,6 +30,7 @@ import {
 } from '../services/storage';
 import { gerarListaPresencaPDF } from '../services/pdfGenerator';
 import { exportarTurmasExcel } from '../services/excelGenerator';
+import { formatarHoraValida } from '../services/config';
 import { ConfirmModal } from './ConfirmModal';
 
 export const TurmasManager: React.FC = () => {
@@ -79,7 +80,7 @@ export const TurmasManager: React.FC = () => {
       modalidade: turmaEdicao.modalidade || 'EUC',
       anoPastoral: Number(turmaEdicao.anoPastoral) || 2028,
       nome: turmaEdicao.nome,
-      horario: turmaEdicao.horario || '08:30 - 10:00',
+      horario: turmaEdicao.horario ? formatarHoraValida(turmaEdicao.horario) : '16h00',
       diaSemana: turmaEdicao.diaSemana || 'Sábado',
       sala: turmaEdicao.sala || 'Sala de Catequese',
       catequistaId: turmaEdicao.catequistaId || undefined,
@@ -245,7 +246,7 @@ export const TurmasManager: React.FC = () => {
                   </p>
                   <p className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-[#A69F95]" />
-                    <span>{t.diaSemana} &bull; {t.horario}</span>
+                    <span>{t.diaSemana} ({formatarHoraValida(t.horario)})</span>
                   </p>
                   <p className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-[#A69F95]" />
@@ -652,7 +653,7 @@ export const TurmasManager: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2D2A26] mb-1">Horário (Ex: 08:30 - 10:00)</label>
+                  <label className="block font-bold text-[#2D2A26] mb-1">Horário (Ex: 8h30, 16h00, 19h00)</label>
                   <input
                     type="text"
                     value={turmaEdicao?.horario || ''}

@@ -36,7 +36,7 @@ import {
   excluirInscritoDefinitivo,
   subscribeStorage
 } from '../services/storage';
-import { formatarDataBR, formatarTelefone, formatarCPF } from '../services/config';
+import { formatarDataBR, formatarTelefone, formatarCPF, formatarOpcaoHorario, formatarHoraValida } from '../services/config';
 import { gerarComprovanteInscricaoPDF } from '../services/pdfGenerator';
 import { exportarInscritosExcel } from '../services/excelGenerator';
 import { ConfirmModal } from './ConfirmModal';
@@ -633,7 +633,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                         <option value="">Nenhuma turma atribuída</option>
                         {turmas.map(t => (
                           <option key={t.id} value={t.id}>
-                            {t.nome} ({t.diaSemana} - {t.horario})
+                            {t.nome} ({t.diaSemana} ({formatarHoraValida(t.horario)}))
                           </option>
                         ))}
                       </select>
@@ -1084,7 +1084,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                   <div className="flex flex-wrap gap-1.5 pt-0.5">
                     {inscritoSelecionado.preferenciasHorario.map((pref, idx) => (
                       <span key={idx} className="bg-[#F3F1ED] text-[#2D2A26] border border-[#E5E1DA] px-2 py-0.5 rounded font-semibold text-[11px]">
-                        {pref}
+                        {formatarOpcaoHorario(pref)}
                       </span>
                     ))}
                   </div>

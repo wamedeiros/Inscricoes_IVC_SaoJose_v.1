@@ -211,7 +211,7 @@ export interface Turma {
   modalidade: ModalidadeCatequese;
   anoPastoral: number; // Ano de Conclusão da turma
   nome: string; // Ex: Turma A - Sábado Manhã
-  horario: string; // Ex: 08:30 - 10:00
+  horario: string; // Ex: 8h30, 16h00, 19h00
   diaSemana: 'Segunda-feira' | 'Terça-feira' | 'Quarta-feira' | 'Quinta-feira' | 'Sexta-feira' | 'Sábado' | 'Domingo';
   sala: string;
   catequistaId?: string;
