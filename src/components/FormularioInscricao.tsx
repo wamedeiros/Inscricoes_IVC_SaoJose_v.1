@@ -1106,12 +1106,12 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
             const isAdulto = resultadoCalculo.modalidade === 'ADU';
             const opcoes = isPre
               ? [
-                  'Domingo (10h00)',
+                  'Domingo (08h30)',
                   'Sábado (16h00)'
                 ]
               : isAdulto
               ? [
-                  'Domingo (8h30)',
+                  'Domingo (08h30)',
                   'Segunda-feira (19h00)',
                   'Terça-feira (19h00)',
                   'Quarta-feira (19h00)',
@@ -1121,7 +1121,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                 ]
               : [
                   'Sábado (16h00)',
-                  'Domingo (8h30)'
+                  'Domingo (08h30)'
                 ];
 
             return (

@@ -152,7 +152,7 @@ export function formatarTelefone(tel?: string): string {
 }
 
 /**
- * Padroniza a exibição da hora no formato: hora + "h" + minuto com 2 dígitos (Ex: 8h30, 16h00, 19h00)
+ * Padroniza a exibição da hora no formato: hora + "h" + minuto com 2 dígitos (Ex: 08h30, 16h00, 19h00)
  */
 export function formatarHoraValida(horaStr?: string): string {
   if (!horaStr) return '';
@@ -165,8 +165,7 @@ export function formatarHoraValida(horaStr?: string): string {
     cleaned = cleaned.split('às')[0].trim();
   }
 
-  if (cleaned === '8h30' || cleaned === '08h30' || cleaned === '8:30' || cleaned === '08:30') return '8h30';
-  if (cleaned === '10h00' || cleaned === '10:00' || cleaned === '10h') return '10h00';
+  if (cleaned === '8h30' || cleaned === '08h30' || cleaned === '8:30' || cleaned === '08:30' || cleaned === '10h00' || cleaned === '10:00' || cleaned === '10h') return '08h30';
   if (cleaned === '16h00' || cleaned === '16:00' || cleaned === '16h' || cleaned === '15:30' || cleaned === '15h30') return '16h00';
   if (cleaned === '19h00' || cleaned === '19:00' || cleaned === '19h') return '19h00';
 
@@ -175,13 +174,13 @@ export function formatarHoraValida(horaStr?: string): string {
   if (match) {
     const hora = parseInt(match[1], 10);
     const minuto = match[2];
-    return `${hora}h${minuto}`;
+    return hora < 10 ? `0${hora}h${minuto}` : `${hora}h${minuto}`;
   }
 
   const matchHora = cleaned.match(/(\d{1,2})h?/i);
   if (matchHora) {
     const hora = parseInt(matchHora[1], 10);
-    return `${hora}h00`;
+    return hora < 10 ? `0${hora}h00` : `${hora}h00`;
   }
 
   return cleaned;
@@ -189,17 +188,14 @@ export function formatarHoraValida(horaStr?: string): string {
 
 /**
  * Padroniza opções de horários no formato: Dia da semana (hora)
- * Ex: Domingo (8h30), Sábado (16h00), Segunda-feira (19h00)
+ * Ex: Domingo (08h30), Sábado (16h00), Segunda-feira (19h00)
  */
 export function formatarOpcaoHorario(opcaoStr?: string): string {
   if (!opcaoStr) return '';
   const str = opcaoStr.trim();
 
-  if (str.includes('Domingo') && (str.includes('10') || str.includes('10:00') || str.includes('10h00'))) {
-    return 'Domingo (10h00)';
-  }
-  if (str.includes('Domingo') && (str.includes('8') || str.includes('8h30') || str.includes('08:30'))) {
-    return 'Domingo (8h30)';
+  if (str.includes('Domingo')) {
+    return 'Domingo (08h30)';
   }
   if (str.includes('Sábado') || str.includes('Sabado')) {
     return 'Sábado (16h00)';
