@@ -15,7 +15,7 @@ export const StatusInscricoesCard: React.FC = () => {
     });
   }, []);
 
-  const abertas = config.inscricoesAbertas !== false; // Padrão: true (Abertas)
+  const abertas = Boolean(config.inscricoesAbertas);
 
   const handleToggleClick = () => {
     const nextState = !abertas;
@@ -24,9 +24,10 @@ export const StatusInscricoesCard: React.FC = () => {
   };
 
   const handleConfirmToggle = () => {
+    const current = getConfig();
     const updated = {
-      ...config,
-      inscricoesAbertas: targetState
+      ...current,
+      inscricoesAbertas: Boolean(targetState)
     };
     saveConfig(updated);
     setConfig(updated);

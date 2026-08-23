@@ -6,10 +6,10 @@
 export type ModalidadeCatequese = 'PRE' | 'EUC' | 'PER' | 'CRI' | 'ADU';
 
 export const MODALIDADE_NAMES: Record<ModalidadeCatequese, string> = {
-  PRE: 'Pré-Catequese (2 a 6 anos)',
-  EUC: 'Eucaristia (7 a 13 anos)',
-  PER: 'Perseverança (7 a 13 anos)',
-  CRI: 'Catecumenato Crismal - Crisma Jovem (14 a 18 anos)',
+  PRE: 'Pré-Catequese (2 a 7 anos)',
+  EUC: 'Eucaristia (8 a 14 anos)',
+  PER: 'Perseverança (8 a 14 anos)',
+  CRI: 'Crisma Jovem (15 a 18 anos)',
   ADU: 'Catecumenato Adulto (A partir de 19 anos)'
 };
 

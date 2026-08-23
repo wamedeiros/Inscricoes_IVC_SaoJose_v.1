@@ -600,10 +600,10 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                         onChange={(e) => setInscritoSelecionado({ ...inscritoSelecionado, modalidade: e.target.value as any })}
                         className="w-full p-2 border border-[#E5E1DA] rounded-lg bg-white font-semibold text-[#8C7851]"
                       >
-                        <option value="PRE">Pré-Catequese (2 a 6 anos)</option>
-                        <option value="EUC">Eucaristia (7 a 13 anos)</option>
-                        <option value="PER">Perseverança (7 a 13 anos)</option>
-                        <option value="CRI">Crisma Jovem (14 a 18 anos)</option>
+                        <option value="PRE">Pré-Catequese (2 a 7 anos)</option>
+                        <option value="EUC">Eucaristia (8 a 14 anos)</option>
+                        <option value="PER">Perseverança (8 a 14 anos)</option>
+                        <option value="CRI">Crisma Jovem (15 a 18 anos)</option>
                         <option value="ADU">Catecumenato Adulto (A partir de 19 anos)</option>
                       </select>
                     </div>

@@ -8,10 +8,10 @@ import { formatarDataBR, formatarTelefone, formatarCPF, formatarOpcaoHorario, fo
 export function exportarInscritosExcel(inscritos: Inscrito[], nomeArquivo: string = 'Inscritos_Catequese_IVC.xlsx'): void {
   const getTipoFichaDesc = (mod: string) => {
     switch (mod) {
-      case 'PRE': return 'Pré-Catequese (2 a 6 anos)';
-      case 'EUC': return 'Eucaristia (7 a 13 anos)';
-      case 'PER': return 'Perseverança (7 a 13 anos)';
-      case 'CRI': return 'Catecumenato Crismal / Crisma Jovem (14 a 18 anos)';
+      case 'PRE': return 'Pré-Catequese (2 a 7 anos)';
+      case 'EUC': return 'Eucaristia (8 a 14 anos)';
+      case 'PER': return 'Perseverança (8 a 14 anos)';
+      case 'CRI': return 'Crisma Jovem (15 a 18 anos)';
       case 'ADU': return 'Catecumenato Adulto (A partir de 19 anos)';
       default: return mod;
     }

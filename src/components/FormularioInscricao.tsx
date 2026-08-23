@@ -164,7 +164,7 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
       const res = determinarModalidade(dataNascimento, eucaristia, config);
       setResultadoCalculo(res);
     }
-  }, [dataNascimento, eucaristia]);
+  }, [dataNascimento, eucaristia, config]);
 
   // Upload simulado de documento
   const handleSimularUploadDoc = (e: React.ChangeEvent<HTMLInputElement>, tipo: DocumentoAnexo['tipo']) => {
@@ -448,9 +448,9 @@ export const FormularioInscricao: React.FC<FormularioInscricaoProps> = ({ onSuce
                   className="w-full px-3 py-2 text-xs border border-[#E5E1DA] rounded-xl focus:ring-2 focus:ring-[#8C7851]/30 focus:border-[#8C7851] focus:outline-none"
                 />
               </div>
-              <p className="text-[11px] text-[#A69F95] mt-1">Data de referência para cálculo: {formatarDataBR(config.dataReferencia)}</p>
-              <p className="text-[11px] text-[#8C7851] mt-1 font-semibold">
-                Atenção: Para realizar a inscrição na Pré-Catequese, a criança deverá ter 2 anos completos até 01/09/2026.
+              <p className="text-[11px] text-[#A69F95] mt-1">Data de referência para cálculo da idade: {formatarDataBR(config.dataReferencia)}</p>
+              <p className="text-[11px] text-[#8C7851] mt-0.5 font-medium">
+                * Mínimo de 2 anos completos até 01/09/2026 para admissão na Catequese.
               </p>
             </div>
 

@@ -422,7 +422,26 @@ let cachedCatequistas: Catequista[] = [];
 let cachedTurmas: Turma[] = [];
 let cachedUsuarios: UsuarioSistema[] = [];
 let cachedAuditoria: RegistroAuditoria[] = [];
-let cachedConfig: ConfigSistema = DEFAULT_CONFIG;
+
+// Carrega estado inicial do cache persistido se disponível no navegador
+function getInitialConfig(): ConfigSistema {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const stored = window.localStorage.getItem('catequese_config');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return {
+          ...DEFAULT_CONFIG,
+          ...parsed,
+          inscricoesAbertas: parsed.inscricoesAbertas !== undefined ? Boolean(parsed.inscricoesAbertas) : DEFAULT_CONFIG.inscricoesAbertas
+        };
+      }
+    } catch (_) {}
+  }
+  return DEFAULT_CONFIG;
+}
+
+let cachedConfig: ConfigSistema = getInitialConfig();
 
 // Barramento Reativo em Memória
 type Listener = () => void;
@@ -453,14 +472,39 @@ export function initStorage(): void {
   onSnapshot(doc(db, 'config', 'default'), (snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.data() as ConfigSistema;
+      // Garante faixas etárias corretas: Pré-Catequese (0 a 7 anos), Eucaristia (8 a 14 anos), Perseverança (8 a 14 anos), Crisma (15 a 18 anos)
+      const faixas = {
+        ...DEFAULT_CONFIG.faixasEtarias,
+        ...(data.faixasEtarias || {})
+      };
+      if (faixas.PRE) {
+        if (faixas.PRE.max <= 6) faixas.PRE.max = 7;
+      }
+      if (faixas.EUC) {
+        if (faixas.EUC.min <= 7) faixas.EUC.min = 8;
+        if (faixas.EUC.max <= 13) faixas.EUC.max = 14;
+      }
+      if (faixas.PER) {
+        if (faixas.PER.min <= 7) faixas.PER.min = 8;
+        if (faixas.PER.max <= 13) faixas.PER.max = 14;
+      }
+      if (faixas.CRI) {
+        if (faixas.CRI.min <= 14) faixas.CRI.min = 15;
+      }
+
       cachedConfig = {
         ...DEFAULT_CONFIG,
         ...data,
-        inscricoesAbertas: data.inscricoesAbertas !== undefined ? data.inscricoesAbertas : true
+        faixasEtarias: faixas,
+        inscricoesAbertas: data.inscricoesAbertas !== undefined ? Boolean(data.inscricoesAbertas) : cachedConfig.inscricoesAbertas
       };
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          window.localStorage.setItem('catequese_config', JSON.stringify(cachedConfig));
+        } catch (_) {}
+      }
     } else {
-      setDoc(doc(db, 'config', 'default'), cleanUndefined(DEFAULT_CONFIG));
-      cachedConfig = DEFAULT_CONFIG;
+      setDoc(doc(db, 'config', 'default'), cleanUndefined(cachedConfig));
     }
     notify();
   }, (err) => console.error('Erro Firestore config:', err));
@@ -548,8 +592,16 @@ export function getConfig(): ConfigSistema {
 }
 
 export function saveConfig(cfg: ConfigSistema): void {
-  cachedConfig = cfg;
-  setDoc(doc(db, 'config', 'default'), cleanUndefined(cfg)).catch(err => console.error('Erro ao salvar config no Firestore:', err));
+  cachedConfig = {
+    ...cfg,
+    inscricoesAbertas: cfg.inscricoesAbertas !== undefined ? Boolean(cfg.inscricoesAbertas) : false
+  };
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.setItem('catequese_config', JSON.stringify(cachedConfig));
+    } catch (_) {}
+  }
+  setDoc(doc(db, 'config', 'default'), cleanUndefined(cachedConfig)).catch(err => console.error('Erro ao salvar config no Firestore:', err));
   notify();
 }
 

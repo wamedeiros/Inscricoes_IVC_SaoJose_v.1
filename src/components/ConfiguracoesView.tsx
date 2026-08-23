@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle2, Sliders, UserPlus, Users, Edit3, Trash2, ShieldCheck, KeyRound } from 'lucide-react';
 import { ConfigSistema, UsuarioSistema } from '../types';
-import { getConfig, saveConfig, getUsuariosSistema, saveUsuarioSistema, deleteUsuarioSistema } from '../services/storage';
+import { getConfig, saveConfig, getUsuariosSistema, saveUsuarioSistema, deleteUsuarioSistema, subscribeStorage } from '../services/storage';
 import { ConfirmModal } from './ConfirmModal';
 import { StatusInscricoesCard } from './StatusInscricoesCard';
 
@@ -13,6 +13,13 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({ usuarioAtu
   const [config, setConfig] = useState<ConfigSistema>(() => getConfig());
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(() => getUsuariosSistema());
   const [salvo, setSalvo] = useState(false);
+
+  useEffect(() => {
+    return subscribeStorage(() => {
+      setConfig(getConfig());
+      setUsuarios(getUsuariosSistema());
+    });
+  }, []);
 
   // Estado para Modal de Novo/Editar Usuário
   const [isModalUsuarioOpen, setIsModalUsuarioOpen] = useState(false);
@@ -30,7 +37,13 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({ usuarioAtu
 
   const handleSalvarConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    saveConfig(config);
+    const currentLatest = getConfig();
+    const updatedConfig: ConfigSistema = {
+      ...config,
+      inscricoesAbertas: currentLatest.inscricoesAbertas
+    };
+    saveConfig(updatedConfig);
+    setConfig(updatedConfig);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 3000);
   };
