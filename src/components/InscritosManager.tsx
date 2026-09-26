@@ -196,7 +196,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => exportarInscritosExcel(inscritosFiltrados)}
+            onClick={() => exportarInscritosExcel(inscritosFiltrados, 'Inscritos_Catequese_IVC.xlsx', turmas)}
             className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all"
           >
             <FileCheck className="w-4 h-4" />

@@ -176,7 +176,7 @@ export const RelatoriosManager: React.FC = () => {
           </div>
 
           <button
-            onClick={() => exportarInscritosExcel(inscritos)}
+            onClick={() => exportarInscritosExcel(inscritos, 'Inscritos_Catequese_IVC.xlsx', turmas)}
             className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow cursor-pointer transition-all"
           >
             <FileSpreadsheet className="w-4 h-4" />
