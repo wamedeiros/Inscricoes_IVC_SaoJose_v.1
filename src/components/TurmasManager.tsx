@@ -31,6 +31,7 @@ import {
 import { gerarListaPresencaPDF } from '../services/pdfGenerator';
 import { exportarTurmasExcel } from '../services/excelGenerator';
 import { formatarHoraValida } from '../services/config';
+import { ordenarTurmasPedagogica } from '../services/turmaSorting';
 import { ConfirmModal } from './ConfirmModal';
 
 export const TurmasManager: React.FC = () => {
@@ -191,9 +192,11 @@ export const TurmasManager: React.FC = () => {
 
       {/* Grid de Turmas Cadastradas */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {turmas.map(t => {
-          // Ocupação dinamicamente calculada com base nos inscritos reais vinculados a esta turma
-          const alunosNaTurma = inscritos.filter(i => i.turmaId === t.id && i.status !== 'Cancelada');
+        {ordenarTurmasPedagogica(turmas).map(t => {
+          // Ocupação dinamicamente calculada com base nos inscritos reais vinculados a esta turma (excluindo Canceladas e Desistências)
+          const alunosNaTurma = inscritos
+            .filter(i => i.turmaId === t.id && i.status !== 'Cancelada' && i.status !== 'Desistência')
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
           const ocupacaoReal = alunosNaTurma.length;
           const percentual = Math.round((ocupacaoReal / (t.vagasMaximas || 1)) * 100);
 

@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { Inscrito, Turma, Responsavel, MODALIDADE_NAMES } from '../types';
 import { formatarDataBR, formatarTelefone, formatarCPF, formatarOpcaoHorario, formatarHoraValida } from './config';
 import { getTurmas } from './storage';
+import { AniversarianteItem } from './pdfGenerator';
 
 /**
  * Exporta Lista de Inscritos para planilha Excel (.xlsx)
@@ -135,4 +136,43 @@ export function exportarResponsaveisExcel(responsaveis: Responsavel[], nomeArqui
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Responsáveis');
 
   XLSX.writeFile(workbook, nomeArquivo);
+}
+
+/**
+ * Exporta Lista de Aniversariantes do Mês para Excel (.xlsx)
+ * - Exibe somente: Data (sem ano), Nome completo, Função/Tipo e Turma
+ * - Sem modalidade, sem telefone, sem e-mail
+ */
+export function exportarAniversariantesExcel(
+  lista: AniversarianteItem[],
+  mesNome: string,
+  nomeArquivo?: string
+): void {
+  const listaOrdenada = [...lista].sort((a, b) => {
+    const diaA = parseInt(a.dataNascimento.split('-')[2] || '0', 10);
+    const diaB = parseInt(b.dataNascimento.split('-')[2] || '0', 10);
+    if (diaA !== diaB) return diaA - diaB;
+    return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+  });
+
+  const formatarDiaMes = (dataIso: string) => {
+    const parts = (dataIso || '').split('T')[0].split('-');
+    if (parts.length >= 3) {
+      return `${parts[2]}/${parts[1]}`;
+    }
+    return dataIso;
+  };
+
+  const data = listaOrdenada.map(item => ({
+    'Data': formatarDiaMes(item.dataNascimento),
+    'Nome completo': item.nome,
+    'Função/Tipo': item.tipo,
+    'Turma': item.turma || 'Não definida'
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, `Aniversariantes ${mesNome}`);
+
+  XLSX.writeFile(workbook, nomeArquivo || `Aniversariantes_${mesNome}.xlsx`);
 }

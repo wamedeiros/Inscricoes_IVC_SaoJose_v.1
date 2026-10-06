@@ -10,7 +10,7 @@ import {
   gerarRelatorioAniversariantesPDF,
   AniversarianteItem
 } from '../services/pdfGenerator';
-import { exportarInscritosExcel } from '../services/excelGenerator';
+import { exportarInscritosExcel, exportarAniversariantesExcel } from '../services/excelGenerator';
 import { MODALIDADE_NAMES } from '../types';
 
 export const RelatoriosManager: React.FC = () => {
@@ -38,21 +38,31 @@ export const RelatoriosManager: React.FC = () => {
     '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
   };
 
-  const handleGerarAniversariantes = () => {
+  const obterListaAniversariantes = (): AniversarianteItem[] => {
     const listaAniversariantes: AniversarianteItem[] = [];
 
-    // 1. Catequizando (Inscritos)
+    // Helper para identificar gênero pelo primeiro nome para Função/Tipo (Catequizando / Catequizanda)
+    const identificarTipoCatequizando = (nome: string) => {
+      const primeiroNome = nome.trim().split(' ')[0].toLowerCase();
+      if (primeiroNome.endsWith('a') && !['lucas', 'jonas', 'elias', 'matias', 'dimas'].includes(primeiroNome)) {
+        return 'Catequizanda';
+      }
+      return 'Catequizando';
+    };
+
+    // 1. Catequizandos (Inscritos ativos - excluindo desistências)
     inscritos.forEach(i => {
       if (!i.dataNascimento) return;
+      if (i.status === 'Desistência' || i.status === 'Cancelada') return;
+
       const m = i.dataNascimento.split('-')[1];
       if (m === mesAniversario) {
+        const turmaObj = turmas.find(t => t.id === i.turmaId);
         listaAniversariantes.push({
-          tipo: 'Catequizando',
+          tipo: identificarTipoCatequizando(i.nome),
           nome: i.nome,
           dataNascimento: i.dataNascimento,
-          detalheOuModalidade: MODALIDADE_NAMES[i.modalidade] || i.modalidade,
-          telefone: i.telefone || (i.responsavel ? i.responsavel.telefone : ''),
-          email: i.email || ''
+          turma: turmaObj ? turmaObj.nome : 'Não definida'
         });
       }
     });
@@ -62,24 +72,39 @@ export const RelatoriosManager: React.FC = () => {
       if (!c.dataNascimento) return;
       const m = c.dataNascimento.split('-')[1];
       if (m === mesAniversario) {
+        const turmasDoCat = turmas.filter(t =>
+          t.catequistaId === c.id ||
+          t.catequistaSecundarioId === c.id ||
+          (c.turmasAtribuidas && c.turmasAtribuidas.includes(t.id))
+        );
+        const turmaTexto = turmasDoCat.length > 0 ? turmasDoCat.map(t => t.nome).join(', ') : 'Geral';
+
         listaAniversariantes.push({
           tipo: 'Catequista',
           nome: c.nome,
           dataNascimento: c.dataNascimento,
-          detalheOuModalidade: c.formacao ? `Catequista (${c.formacao})` : 'Catequista da Paróquia',
-          telefone: c.telefone || '',
-          email: c.email || ''
+          turma: turmaTexto
         });
       }
     });
 
-    gerarRelatorioAniversariantesPDF(listaAniversariantes, NORM_MESES[mesAniversario] || 'Mês');
+    return listaAniversariantes;
+  };
+
+  const handleGerarAniversariantes = () => {
+    const lista = obterListaAniversariantes();
+    gerarRelatorioAniversariantesPDF(lista, NORM_MESES[mesAniversario] || 'Mês');
+  };
+
+  const handleExportarAniversariantesExcel = () => {
+    const lista = obterListaAniversariantes();
+    exportarAniversariantesExcel(lista, NORM_MESES[mesAniversario] || 'Mês');
   };
 
   const handleGerarPresenca = () => {
     const t = turmas.find(x => x.id === turmaSelecionadaId);
     if (!t) return;
-    const alunos = inscritos.filter(i => i.turmaId === t.id);
+    const alunos = inscritos.filter(i => i.turmaId === t.id && i.status !== 'Desistência' && i.status !== 'Cancelada');
     gerarListaPresencaPDF(t, alunos);
   };
 
@@ -154,13 +179,22 @@ export const RelatoriosManager: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={handleGerarAniversariantes}
-            className="w-full py-2.5 bg-[#8C7851] hover:bg-[#7A6946] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow cursor-pointer transition-all"
-          >
-            <Printer className="w-4 h-4" />
-            Gerar Relatório PDF
-          </button>
+          <div className="flex flex-col gap-2 pt-1">
+            <button
+              onClick={handleGerarAniversariantes}
+              className="w-full py-2 bg-[#8C7851] hover:bg-[#7A6946] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow cursor-pointer transition-all"
+            >
+              <Printer className="w-4 h-4" />
+              Gerar Relatório PDF
+            </button>
+            <button
+              onClick={handleExportarAniversariantesExcel}
+              className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow cursor-pointer transition-all"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Baixar Planilha Excel (.xlsx)
+            </button>
+          </div>
         </div>
 
         {/* Relatório 3: Exportação Geral Excel */}

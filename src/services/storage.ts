@@ -24,6 +24,7 @@ import {
   PublicComprovanteDTO
 } from '../types';
 import { DEFAULT_CONFIG } from './config';
+import { compararTurmasPedagogica } from './turmaSorting';
 
 // Helper para remover valores `undefined` antes de enviar ao Firestore
 function cleanUndefined<T>(obj: T): T {
@@ -680,14 +681,14 @@ export function deleteCatequista(catequistaId: string): void {
 export function getTurmas(paroquiaId?: string): Turma[] {
   const inscritos = getInscritos();
   const turmasAtualizadas = cachedTurmas.map(t => {
-    const ocupacaoReal = inscritos.filter(i => i.turmaId === t.id).length;
+    const ocupacaoReal = inscritos.filter(i => i.turmaId === t.id && i.status !== 'Desistência' && i.status !== 'Cancelada').length;
     const listaEspera = Math.max(0, ocupacaoReal - (t.vagasMaximas || 20));
     return {
       ...t,
       vagasOcupadas: ocupacaoReal,
       listaEsperaCount: listaEspera
     };
-  });
+  }).sort(compararTurmasPedagogica);
 
   if (paroquiaId) {
     return turmasAtualizadas.filter(t => t.paroquiaId === paroquiaId);

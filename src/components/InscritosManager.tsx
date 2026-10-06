@@ -90,7 +90,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
       (i.responsavel && i.responsavel.nome.toLowerCase().includes(key)) ||
       i.telefone.includes(key);
 
-    const matchMod = filtroModalidade === 'TODAS' || i.modalidade === filtroModalidade;
+    const matchMod = filtroModalidade === 'TODAS' || i.modalidade === filtroModalidade || (filtroModalidade === 'DESISTENCIA' && i.status === 'Desistência');
     const matchCom = filtroComunidade === 'TODAS' || i.comunidadeId === filtroComunidade;
     const matchTurma = filtroTurma === 'TODAS' || i.turmaId === filtroTurma;
     const matchStatus = filtroStatus === 'TODOS' || i.status === filtroStatus;
@@ -259,6 +259,7 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
             <option value="PER">Perseverança</option>
             <option value="CRI">Crisma Jovem</option>
             <option value="ADU">Catecumenato Adulto</option>
+            <option value="DESISTENCIA">Desistência</option>
           </select>
         </div>
 
@@ -299,8 +300,10 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
           >
             <option value="TODOS">Todos os Status</option>
             <option value="Inscrição enviada">Inscrição enviada</option>
+            <option value="Documentos pendentes">Documentos pendentes</option>
             <option value="Matriculada">Matriculada</option>
             <option value="Turma definida">Turma definida</option>
+            <option value="Desistência">Desistência</option>
           </select>
         </div>
       </div>
@@ -386,12 +389,21 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                       <select
                         value={ins.status}
                         onChange={(e) => handleAtualizarStatus(ins.id, e.target.value as StatusInscricao)}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#E5E1DA] cursor-pointer bg-white text-[#2D2A26]"
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-full border cursor-pointer ${
+                          ins.status === 'Desistência'
+                            ? 'text-rose-700 bg-rose-50 border-rose-300 font-extrabold'
+                            : ins.status === 'Turma definida'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-300'
+                            : ins.status === 'Matriculada'
+                            ? 'text-sky-700 bg-sky-50 border-sky-300'
+                            : 'text-[#2D2A26] bg-white border-[#E5E1DA]'
+                        }`}
                       >
                         <option value="Inscrição enviada">Inscrição enviada</option>
                         <option value="Documentos pendentes">Documentos pendentes</option>
                         <option value="Matriculada">Matriculada</option>
                         <option value="Turma definida">Turma definida</option>
+                        <option value="Desistência">Desistência</option>
                       </select>
                     </td>
 
@@ -453,7 +465,20 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#C4A976]">
                   {modoEdicao ? 'Editar Registro de Inscrito' : 'Ficha Oficial do Inscrito'}
                 </span>
-                <h3 className="text-lg font-bold">{inscritoSelecionado.nome}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h3 className="text-lg font-bold">{inscritoSelecionado.nome}</h3>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                    inscritoSelecionado.status === 'Desistência'
+                      ? 'text-rose-300 bg-rose-950/60 border-rose-500'
+                      : inscritoSelecionado.status === 'Turma definida'
+                      ? 'text-emerald-300 bg-emerald-950/60 border-emerald-500'
+                      : inscritoSelecionado.status === 'Matriculada'
+                      ? 'text-sky-300 bg-sky-950/60 border-sky-500'
+                      : 'text-amber-300 bg-amber-950/60 border-amber-500'
+                  }`}>
+                    {inscritoSelecionado.status}
+                  </span>
+                </div>
                 <p className="text-xs text-[#A69F95] font-mono">Protocolo: {inscritoSelecionado.protocolo}</p>
               </div>
 
@@ -615,8 +640,10 @@ export const InscritosManager: React.FC<InscritosManagerProps> = ({ usuarioAtual
                         className="w-full p-2 border border-[#E5E1DA] rounded-lg bg-white font-semibold"
                       >
                         <option value="Inscrição enviada">Inscrição enviada</option>
+                        <option value="Documentos pendentes">Documentos pendentes</option>
                         <option value="Matriculada">Matriculada</option>
                         <option value="Turma definida">Turma definida</option>
+                        <option value="Desistência">Desistência</option>
                       </select>
                     </div>
                     <div>

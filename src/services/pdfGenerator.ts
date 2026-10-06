@@ -365,7 +365,10 @@ export async function gerarComprovanteInscricaoPDF(inscrito: Inscrito, modo: 'do
 }
 
 /**
- * Gera Lista de Presença da Turma em PDF
+ * Gera Lista de Frequência / Diário de Classe da Turma em PDF
+ * - Catequizandos estritamente em ordem alfabética pelo nome completo (pt-BR)
+ * - Apresenta datas dos encontros nos cabeçalhos
+ * - Remove campos Protocolo e Telefone
  */
 export function gerarListaPresencaPDF(turma: Turma, inscritos: Inscrito[]): void {
   const doc = new jsPDF({
@@ -380,7 +383,7 @@ export function gerarListaPresencaPDF(turma: Turma, inscritos: Inscrito[]): void
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('IGREJA SÃO JOSÉ - LAR DE MISERICÓRDIA - LISTA DE PRESENÇA', 148, 8, { align: 'center' });
+  doc.text('IGREJA SÃO JOSÉ - LAR DE MISERICÓRDIA - DIÁRIO DE CLASSE / LISTA DE FREQUÊNCIA', 148, 8, { align: 'center' });
 
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(12);
@@ -393,45 +396,79 @@ export function gerarListaPresencaPDF(turma: Turma, inscritos: Inscrito[]): void
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
   doc.text(`Catequista(s): ${catTexto} | Horário: ${turma.diaSemana} (${formatarHoraValida(turma.horario)}) | Sala: ${turma.sala}`, 15, 25);
-  doc.text(`Ano de Conclusão: ${turma.anoPastoral || 2028} | Total de Alunos Alocados: ${inscritos.length}`, 15, 30);
 
-  const tableBody = inscritos.map((ins, idx) => [
+  // Filtra catequizandos que não desistiram e ordena estritamente por ordem alfabética do nome completo
+  const inscritosOrdenados = inscritos
+    .filter(ins => ins.status !== 'Desistência' && ins.status !== 'Cancelada')
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+  doc.text(`Ano de Conclusão: ${turma.anoPastoral || 2028} | Total de Alunos Alocados: ${inscritosOrdenados.length}`, 15, 30);
+
+  // Tabela de Frequência com apenas: Nº, Nome completo e Colunas de Encontros com espaço para data
+  const tableBody = inscritosOrdenados.map((ins, idx) => [
     idx + 1,
-    ins.protocolo,
     ins.nome,
-    formatarTelefone(ins.telefone || ins.responsavel?.telefone),
     '', '', '', '', '', '', '', '', '', ''
   ]);
 
   autoTable(doc, {
     startY: 34,
     theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
-    columnStyles: {
-      0: { cellWidth: 10 },
-      1: { cellWidth: 28 },
-      2: { cellWidth: 65, halign: 'left' },
-      3: { cellWidth: 30, halign: 'left' }
+    styles: { fontSize: 8, cellPadding: 2, halign: 'center', valign: 'middle' },
+    headStyles: {
+      fillColor: [140, 120, 81],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',
+      valign: 'middle',
+      fontSize: 7.5
     },
-    head: [['Nº', 'Protocolo', 'Nome do Catequizando', 'Telefone', 'Encontro 1', 'Encontro 2', 'Encontro 3', 'Encontro 4', 'Encontro 5', 'Encontro 6', 'Encontro 7', 'Encontro 8', 'Encontro 9', 'Encontro 10']],
+    columnStyles: {
+      0: { cellWidth: 12, halign: 'center' },
+      1: { cellWidth: 75, halign: 'left', fontStyle: 'bold' },
+      2: { cellWidth: 18, halign: 'center' },
+      3: { cellWidth: 18, halign: 'center' },
+      4: { cellWidth: 18, halign: 'center' },
+      5: { cellWidth: 18, halign: 'center' },
+      6: { cellWidth: 18, halign: 'center' },
+      7: { cellWidth: 18, halign: 'center' },
+      8: { cellWidth: 18, halign: 'center' },
+      9: { cellWidth: 18, halign: 'center' },
+      10: { cellWidth: 18, halign: 'center' },
+      11: { cellWidth: 18, halign: 'center' }
+    },
+    head: [[
+      'N°',
+      'Nome completo',
+      'Encontro 1\nData: ___/___',
+      'Encontro 2\nData: ___/___',
+      'Encontro 3\nData: ___/___',
+      'Encontro 4\nData: ___/___',
+      'Encontro 5\nData: ___/___',
+      'Encontro 6\nData: ___/___',
+      'Encontro 7\nData: ___/___',
+      'Encontro 8\nData: ___/___',
+      'Encontro 9\nData: ___/___',
+      'Encontro 10\nData: ___/___'
+    ]],
     body: tableBody,
     margin: { left: 15, right: 15 }
   });
 
-  doc.save(`Lista_Presenca_${turma.nome.replace(/\s+/g, '_')}.pdf`);
+  doc.save(`Diario_Classe_${turma.nome.replace(/\s+/g, '_')}.pdf`);
 }
 
 export interface AniversarianteItem {
-  tipo: 'Catequizando' | 'Catequista';
+  tipo: string; // 'Catequizando' | 'Catequizanda' | 'Catequista'
   nome: string;
-  dataNascimento: string;
-  detalheOuModalidade: string;
-  telefone: string;
-  email: string;
+  dataNascimento: string; // YYYY-MM-DD
+  turma: string;
 }
 
 /**
- * Gera Relatório de Aniversariantes em PDF
+ * Gera Relatório de Aniversariantes do Mês em PDF
+ * - Exibe somente: Data (sem ano), Nome completo, Função/Tipo e Turma
+ * - Remove Modalidade, Telefone e E-mail
  */
 export function gerarRelatorioAniversariantesPDF(lista: AniversarianteItem[], mesNome: string): void {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -444,26 +481,40 @@ export function gerarRelatorioAniversariantesPDF(lista: AniversarianteItem[], me
   doc.setTextColor(45, 42, 38);
   doc.text(`RELATÓRIO DE ANIVERSARIANTES DO MÊS DE ${mesNome.toUpperCase()}`, 105, 20, { align: 'center' });
 
+  // Ordenar pelo dia do mês (crescente) e desempate alfabético
   const listaOrdenada = [...lista].sort((a, b) => {
     const diaA = parseInt(a.dataNascimento.split('-')[2] || '0', 10);
     const diaB = parseInt(b.dataNascimento.split('-')[2] || '0', 10);
-    return diaA - diaB;
+    if (diaA !== diaB) return diaA - diaB;
+    return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
   });
 
+  const formatarDiaMes = (dataIso: string) => {
+    const parts = (dataIso || '').split('T')[0].split('-');
+    if (parts.length >= 3) {
+      return `${parts[2]}/${parts[1]}`;
+    }
+    return dataIso;
+  };
+
   const body = listaOrdenada.map(item => [
-    formatarDataBR(item.dataNascimento),
+    formatarDiaMes(item.dataNascimento),
     item.nome,
     item.tipo,
-    item.detalheOuModalidade,
-    formatarTelefone(item.telefone),
-    item.email || '-'
+    item.turma || 'Não definida'
   ]);
 
   autoTable(doc, {
     startY: 26,
     theme: 'striped',
     headStyles: { fillColor: [140, 120, 81], textColor: [255, 255, 255], fontStyle: 'bold' },
-    head: [['Data Nasc.', 'Nome Completo', 'Função / Tipo', 'Modalidade / Função', 'Telefone', 'E-mail']],
+    columnStyles: {
+      0: { cellWidth: 25, halign: 'center' },
+      1: { cellWidth: 70, halign: 'left' },
+      2: { cellWidth: 40, halign: 'left' },
+      3: { cellWidth: 50, halign: 'left' }
+    },
+    head: [['Data', 'Nome completo', 'Função/Tipo', 'Turma']],
     body,
     margin: { left: 12, right: 12 }
   });
